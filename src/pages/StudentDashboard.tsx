@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { LogOut, User, Utensils, Calendar } from "lucide-react";
+import { LogOut, User, Utensils, Calendar, Bell } from "lucide-react";
 import { StudentProfile } from "@/components/student/StudentProfile";
 import { StudentMealHistory } from "@/components/student/StudentMealHistory";
+import { StudentAnnouncements } from "@/components/student/StudentAnnouncements";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -50,6 +51,20 @@ const StudentDashboard = () => {
               </CardHeader>
               <CardContent>
                 <StudentProfile />
+              </CardContent>
+            </Card>
+
+            {/* Announcements */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-warning" />
+                  <CardTitle>Announcements</CardTitle>
+                </div>
+                <CardDescription>Latest updates from cafeteria staff</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <StudentAnnouncements />
               </CardContent>
             </Card>
 
