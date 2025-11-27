@@ -8,75 +8,72 @@ import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
-export const MealRating = () => {
-  const { user } = useAuth();
+type MealType = "breakfast" | "lunch" | "dinner";
+
+const MealRatingSection = ({
+  mealType,
+  studentId,
+  today,
+}: {
+  mealType: MealType;
+  studentId: string;
+  today: string;
+}) => {
   const queryClient = useQueryClient();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const mealLabels = {
+    breakfast: "Breakfast",
+    lunch: "Lunch",
+    dinner: "Dinner",
+  };
 
-  // Get student ID
-  const { data: student } = useQuery({
-    queryKey: ["student", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("students")
-        .select("id")
-        .eq("user_id", user?.id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
-  });
-
-  // Check if student ate lunch today
+  // Check if student ate this meal today
   const { data: todayMeal, isLoading: loadingMeal } = useQuery({
-    queryKey: ["today-meal", student?.id, today],
+    queryKey: ["today-meal", studentId, today, mealType],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("meals")
         .select("*")
-        .eq("student_id", student?.id)
+        .eq("student_id", studentId)
         .eq("meal_date", today)
-        .eq("meal_type", "lunch")
+        .eq("meal_type", mealType)
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!student?.id,
+    enabled: !!studentId,
   });
 
   // Check if already rated
   const { data: existingRating, isLoading: loadingRating } = useQuery({
-    queryKey: ["meal-rating", student?.id, today],
+    queryKey: ["meal-rating", studentId, today, mealType],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("meal_ratings")
         .select("*")
-        .eq("student_id", student?.id)
+        .eq("student_id", studentId)
         .eq("meal_date", today)
-        .eq("meal_type", "lunch")
+        .eq("meal_type", mealType)
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!student?.id,
+    enabled: !!studentId,
   });
 
   const submitRating = useMutation({
     mutationFn: async () => {
-      if (!student?.id || rating === 0) return;
+      if (!studentId || rating === 0) return;
 
       const { error } = await supabase.from("meal_ratings").insert({
-        student_id: student.id,
+        student_id: studentId,
         meal_date: today,
-        meal_type: "lunch",
+        meal_type: mealType,
         rating,
         comment: comment.trim() || null,
       });
@@ -99,16 +96,13 @@ export const MealRating = () => {
   }
 
   if (!todayMeal) {
-    return (
-      <div className="text-sm text-muted-foreground">
-        You didn't have lunch today yet.
-      </div>
-    );
+    return null;
   }
 
   if (existingRating) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 p-4 rounded-lg bg-muted/50">
+        <p className="text-sm font-medium">{mealLabels[mealType]}</p>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <Star
@@ -127,16 +121,18 @@ export const MealRating = () => {
           </p>
         )}
         <p className="text-xs text-muted-foreground">
-          You rated today's lunch. Thank you!
+          You rated this meal. Thank you!
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4 rounded-lg border">
       <div>
-        <p className="text-sm font-medium mb-2">How was today's lunch?</p>
+        <p className="text-sm font-medium mb-2">
+          How was today's {mealLabels[mealType].toLowerCase()}?
+        </p>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -176,6 +172,68 @@ export const MealRating = () => {
       >
         {submitRating.isPending ? "Submitting..." : "Submit Rating"}
       </Button>
+    </div>
+  );
+};
+
+export const MealRating = () => {
+  const { user } = useAuth();
+  const today = format(new Date(), "yyyy-MM-dd");
+
+  // Get student ID
+  const { data: student } = useQuery({
+    queryKey: ["student", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("students")
+        .select("id")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Check if student had any meals today
+  const { data: todayMeals, isLoading } = useQuery({
+    queryKey: ["today-meals", student?.id, today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("meals")
+        .select("*")
+        .eq("student_id", student?.id)
+        .eq("meal_date", today);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!student?.id,
+  });
+
+  if (isLoading) {
+    return <div className="text-sm text-muted-foreground">Loading...</div>;
+  }
+
+  if (!todayMeals || todayMeals.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground">
+        You haven't had any meals today yet.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {(["breakfast", "lunch", "dinner"] as MealType[]).map((mealType) => (
+        <MealRatingSection
+          key={mealType}
+          mealType={mealType}
+          studentId={student!.id}
+          today={today}
+        />
+      ))}
     </div>
   );
 };
