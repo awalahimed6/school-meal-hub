@@ -95,7 +95,18 @@ export const StaffManagement = () => {
       setIsOpen(false);
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to create staff");
+      const errorMessage = error.message || "Failed to create staff member";
+      
+      // Show user-friendly error messages
+      if (errorMessage.includes("already exists")) {
+        toast.error("This email is already registered. Please use a different email address.");
+      } else if (errorMessage.includes("email")) {
+        toast.error("Invalid email address. Please check and try again.");
+      } else if (errorMessage.includes("password")) {
+        toast.error("Password must be at least 6 characters long.");
+      } else {
+        toast.error(errorMessage);
+      }
     },
   });
 
@@ -144,7 +155,16 @@ export const StaffManagement = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" required />
+              <Input 
+                id="email" 
+                name="email" 
+                type="email" 
+                placeholder="staff@school.com"
+                required 
+              />
+              <p className="text-xs text-muted-foreground">
+                This email must be unique and will be used for login
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>

@@ -61,8 +61,19 @@ serve(async (req) => {
       user_metadata: { full_name: fullName },
     });
 
-    if (createError || !newUser.user) {
-      throw createError || new Error("Failed to create user");
+    if (createError) {
+      // Handle specific error cases
+      if (createError.message?.includes("already been registered")) {
+        return new Response(
+          JSON.stringify({ error: "A staff member with this email already exists. Please use a different email address." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      throw createError;
+    }
+
+    if (!newUser.user) {
+      throw new Error("Failed to create user");
     }
 
     const userId = newUser.user.id;
