@@ -74,7 +74,8 @@ serve(async (req) => {
       );
     }
 
-    // Delete from students table first (this will cascade delete meals due to foreign key)
+    // Delete from students table first (this will cascade delete meals and meal_ratings due to foreign key)
+    console.log('Deleting student record:', studentId, student.full_name);
     const { error: deleteStudentError } = await supabaseAdmin
       .from('students')
       .delete()
@@ -83,13 +84,17 @@ serve(async (req) => {
     if (deleteStudentError) {
       console.error('Error deleting student record:', deleteStudentError);
       return new Response(
-        JSON.stringify({ error: 'Failed to delete student record' }),
+        JSON.stringify({ error: 'Failed to delete student record', details: deleteStudentError.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('Student record deleted from database');
+
     // If student has an associated auth user, delete it
     if (student.user_id) {
+      console.log('Deleting auth user and roles for user_id:', student.user_id);
+      
       // Delete user_roles entry
       const { error: deleteRoleError } = await supabaseAdmin
         .from('user_roles')
@@ -98,6 +103,8 @@ serve(async (req) => {
 
       if (deleteRoleError) {
         console.error('Error deleting user role:', deleteRoleError);
+      } else {
+        console.log('User role deleted');
       }
 
       // Delete the auth user
@@ -106,12 +113,14 @@ serve(async (req) => {
       );
 
       if (deleteAuthError) {
-        console.error('Error deleting auth user:', deleteAuthError);
+        console.error('Error deleting auth user:', deleteAuthError.message);
         // Don't fail the whole operation if auth deletion fails
         // The student record is already deleted
       } else {
         console.log('Auth user deleted successfully:', student.user_id);
       }
+    } else {
+      console.log('Student has no associated auth user, skipping auth deletion');
     }
 
     console.log('Student deleted successfully:', student.full_name);
