@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,11 +29,15 @@ const Auth = () => {
   const { user, role, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already logged in
-  if (user && role && !loading) {
-    if (role === "admin") navigate("/admin");
-    else if (role === "staff") navigate("/staff");
-    else if (role === "student") navigate("/student");
+  useEffect(() => {
+    if (!loading && user && role) {
+      if (role === "admin") navigate("/admin");
+      else if (role === "staff") navigate("/staff");
+      else if (role === "student") navigate("/student");
+    }
+  }, [user, role, loading, navigate]);
+
+  if (!loading && user && role) {
     return null;
   }
 
