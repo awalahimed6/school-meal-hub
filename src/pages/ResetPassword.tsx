@@ -23,15 +23,33 @@ const ResetPassword = () => {
   const [isValidSession, setIsValidSession] = useState(false);
 
   useEffect(() => {
-    // Check if we have a valid recovery session
+    // Listen for auth state changes to handle the token from email
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsValidSession(true);
+      } else if (event === 'SIGNED_IN' && session) {
+        setIsValidSession(true);
+      }
+    });
+
+    // Also check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setIsValidSession(true);
       } else {
-        toast.error("Invalid or expired reset link");
-        navigate("/auth");
+        // Give it a moment for the token exchange to complete
+        setTimeout(() => {
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+              toast.error("Invalid or expired reset link");
+              navigate("/auth");
+            }
+          });
+        }, 1000);
       }
     });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,7 +75,9 @@ const ResetPassword = () => {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
-        toast.error("Failed to reset password. Please try again.");
+        console.error("Password reset error:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to reset password. Please try again.";
+        toast.error(errorMessage);
       }
     } finally {
       setIsLoading(false);
