@@ -260,9 +260,15 @@ export const StudentManagement = () => {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Dialog open={isOpen} onOpenChange={handleClose}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+          if (!open) {
+            handleClose();
+          } else {
+            setIsOpen(true);
+          }
+        }}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsOpen(true)}>
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Add Student
             </Button>
