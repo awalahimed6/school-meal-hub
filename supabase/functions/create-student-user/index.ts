@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -70,12 +71,22 @@ serve(async (req) => {
       );
     }
 
-    const defaultPassword = password || "Welcome123!";
+    // Generate a random secure password
+    const generatePassword = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+      let generatedPassword = '';
+      for (let i = 0; i < 10; i++) {
+        generatedPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return generatedPassword;
+    };
+
+    const generatedPassword = password || generatePassword();
 
     // Create the auth user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
-      password: defaultPassword,
+      password: generatedPassword,
       email_confirm: true,
       user_metadata: {
         full_name: fullName,
@@ -150,12 +161,43 @@ serve(async (req) => {
 
       console.log("Student user created successfully:", { userId, studentId, email });
 
+      // Send email with credentials
+      try {
+        const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+        const appUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://your-app-url.com';
+        
+        await resend.emails.send({
+          from: "School Meal Hub <onboarding@resend.dev>",
+          to: [email],
+          subject: "Welcome to School Meal Hub - Login Credentials",
+          html: `
+            <h1>Welcome to School Meal Hub</h1>
+            <p>Hello ${fullName},</p>
+            <p>Your student account has been created successfully!</p>
+            <br>
+            <p><strong>Login Details:</strong></p>
+            <p>Email: ${email}</p>
+            <p>Temporary Password: <strong>${generatedPassword}</strong></p>
+            <br>
+            <p>Please log in at: <a href="${appUrl}">${appUrl}</a></p>
+            <p>We recommend changing your password after your first login.</p>
+            <br>
+            <p>Best regards,<br>School Meal Hub Team</p>
+          `,
+        });
+        
+        console.log("Credentials email sent successfully to:", email);
+      } catch (emailError) {
+        console.error("Error sending credentials email:", emailError);
+        // Don't fail the entire operation if email fails
+      }
+
       return new Response(
         JSON.stringify({
           user_id: userId,
           student_id: studentId,
           email,
-          message: "Student account created successfully",
+          message: "Student account created successfully and credentials sent via email",
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -172,16 +214,18 @@ serve(async (req) => {
       }
       await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
 
+      const errorMessage = error instanceof Error ? error.message : "Failed to create student account";
       return new Response(
-        JSON.stringify({ error: error.message || "Failed to create student account" }),
+        JSON.stringify({ error: errorMessage }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
   } catch (error) {
     console.error("Unexpected error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return new Response(
-      JSON.stringify({ error: error.message || "Internal server error" }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
