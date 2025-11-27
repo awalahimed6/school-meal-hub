@@ -4,9 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { signIn } from "@/lib/auth";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Utensils } from "lucide-react";
 import { z } from "zod";
 
@@ -15,10 +24,16 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+const resetSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
 const Auth = () => {
   const navigate = useNavigate();
   const { user, role, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     if (!loading && user && role) {
@@ -65,6 +80,41 @@ const Auth = () => {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsResetting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("reset-email") as string;
+
+    try {
+      resetSchema.parse({ email });
+
+      // Generate reset link
+      const resetLink = `${window.location.origin}/auth/reset-password`;
+
+      // Request password reset from Supabase (this generates the token)
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: resetLink,
+      });
+
+      if (error) throw error;
+
+      toast.success("Password reset link sent! Check your email.");
+      setIsResetDialogOpen(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else if (error instanceof Error && error.message.includes("rate limit")) {
+        toast.error("Too many requests. Please wait a few minutes and try again.");
+      } else {
+        toast.error("If an account exists with this email, you will receive a reset link.");
+      }
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <Card className="w-full max-w-md">
@@ -99,6 +149,40 @@ const Auth = () => {
                 autoComplete="current-password"
               />
             </div>
+            
+            <div className="flex items-center justify-end">
+              <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button type="button" variant="link" className="px-0 text-sm">
+                    Forgot password?
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Reset Password</DialogTitle>
+                    <DialogDescription>
+                      Enter your email address and we'll send you a link to reset your password.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handlePasswordReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email</Label>
+                      <Input
+                        id="reset-email"
+                        name="reset-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isResetting}>
+                      {isResetting ? "Sending..." : "Send Reset Link"}
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Logging in..." : "Login"}
             </Button>
