@@ -34,17 +34,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          const userRole = await getUserRole(session.user.id);
-          setRole(userRole);
+          setTimeout(() => {
+            getUserRole(session.user.id).then((userRole) => {
+              setRole(userRole);
+              setLoading(false);
+            });
+          }, 0);
         } else {
           setRole(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 

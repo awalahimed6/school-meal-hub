@@ -58,10 +58,13 @@ export const StaffManagement = () => {
       staffSchema.parse({ full_name: fullName, position, email, password });
 
       // Create auth user
+      const redirectUrl = `${window.location.origin}/auth`;
+      
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: { full_name: fullName },
         },
       });
