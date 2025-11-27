@@ -4,38 +4,47 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Search, Check } from "lucide-react";
+import { Search, Check, History, Utensils } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { format } from "date-fns";
 
 export const StudentSearch = () => {
-  const [searchId, setSearchId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  const searchStudent = async () => {
-    if (!searchId.trim()) {
-      toast.error("Please enter a student ID");
-      return;
-    }
+  const { data: searchResults, isLoading: searchLoading } = useQuery({
+    queryKey: ["student-search", searchQuery],
+    queryFn: async () => {
+      if (!searchQuery.trim()) return [];
 
-    const { data, error } = await supabase
-      .from("students")
-      .select("*")
-      .eq("student_id", searchId.toUpperCase())
-      .single();
+      const query = searchQuery.trim().toUpperCase();
+      
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .or(`student_id.ilike.%${query}%,full_name.ilike.%${query}%`)
+        .limit(10);
 
-    if (error || !data) {
-      toast.error("Student not found");
-      setSelectedStudent(null);
-      return;
-    }
-
-    setSelectedStudent(data);
-  };
+      if (error) throw error;
+      return data;
+    },
+    enabled: searchQuery.length > 0,
+  });
 
   const { data: todaysMeals } = useQuery({
     queryKey: ["todays-meals", selectedStudent?.id],
@@ -55,11 +64,36 @@ export const StudentSearch = () => {
     enabled: !!selectedStudent,
   });
 
+  const { data: mealHistory } = useQuery({
+    queryKey: ["meal-history", selectedStudent?.id],
+    queryFn: async () => {
+      if (!selectedStudent) return [];
+
+      const { data, error } = await supabase
+        .from("meals")
+        .select("*")
+        .eq("student_id", selectedStudent.id)
+        .order("meal_date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedStudent,
+  });
+
   const recordMeal = useMutation({
     mutationFn: async (mealType: "breakfast" | "lunch" | "dinner") => {
       if (!selectedStudent || !user) return;
 
       const today = new Date().toISOString().split("T")[0];
+
+      // Check if meal already exists
+      const existing = todaysMeals?.find(m => m.meal_type === mealType);
+      if (existing) {
+        throw new Error("Meal already recorded for today");
+      }
 
       const { error } = await supabase.from("meals").insert({
         student_id: selectedStudent.id,
@@ -72,16 +106,18 @@ export const StudentSearch = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todays-meals"] });
+      queryClient.invalidateQueries({ queryKey: ["meal-history"] });
       toast.success("Meal recorded successfully");
     },
     onError: (error: any) => {
-      if (error.message.includes("duplicate")) {
-        toast.error("Meal already recorded for today");
-      } else {
-        toast.error("Failed to record meal");
-      }
+      toast.error(error.message || "Failed to record meal");
     },
   });
+
+  const handleSelectStudent = (student: any) => {
+    setSelectedStudent(student);
+    setSearchQuery("");
+  };
 
   const hasMeal = (mealType: string) => {
     return todaysMeals?.some((m) => m.meal_type === mealType);
@@ -90,78 +126,224 @@ export const StudentSearch = () => {
   return (
     <div className="space-y-6">
       {/* Search */}
-      <div className="flex gap-2">
-        <div className="flex-1 space-y-2">
-          <Label htmlFor="student-id">Student ID</Label>
+      <div className="space-y-2">
+        <Label htmlFor="student-search">Search Student</Label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            id="student-id"
-            placeholder="Enter student ID (e.g., STU123456)"
-            value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && searchStudent()}
+            id="student-search"
+            placeholder="Search by student ID or name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
           />
         </div>
-        <Button onClick={searchStudent} className="mt-8">
-          <Search className="mr-2 h-4 w-4" />
-          Search
-        </Button>
+        
+        {/* Search Results Dropdown */}
+        {searchQuery && (
+          <Card className="mt-2">
+            <CardContent className="p-2">
+              {searchLoading ? (
+                <p className="p-4 text-center text-sm text-muted-foreground">Searching...</p>
+              ) : searchResults && searchResults.length > 0 ? (
+                <div className="space-y-1">
+                  {searchResults.map((student) => (
+                    <button
+                      key={student.id}
+                      onClick={() => handleSelectStudent(student)}
+                      className="flex w-full items-center gap-3 rounded-lg p-3 text-left hover:bg-accent"
+                    >
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={student.profile_image || undefined} />
+                        <AvatarFallback>
+                          {student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium">{student.full_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {student.student_id} • {student.grade}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={student.status === "active" ? "default" : "secondary"}
+                      >
+                        {student.status}
+                      </Badge>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="p-4 text-center text-sm text-muted-foreground">
+                  No students found
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {/* Student Info & Meal Recording */}
+      {/* Selected Student Info & Actions */}
       {selectedStudent && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="mb-6 space-y-2">
-              <h3 className="text-lg font-semibold">{selectedStudent.full_name}</h3>
-              <div className="flex gap-4 text-sm text-muted-foreground">
-                <span>ID: {selectedStudent.student_id}</span>
-                <span>Grade: {selectedStudent.grade}</span>
-                <span>Sex: {selectedStudent.sex}</span>
-              </div>
-              <Badge
-                variant={
-                  selectedStudent.status === "active"
-                    ? "default"
-                    : selectedStudent.status === "suspended"
-                    ? "destructive"
-                    : "secondary"
-                }
-              >
-                {selectedStudent.status}
-              </Badge>
-            </div>
+        <Tabs defaultValue="record" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="record">
+              <Utensils className="mr-2 h-4 w-4" />
+              Record Meals
+            </TabsTrigger>
+            <TabsTrigger value="history">
+              <History className="mr-2 h-4 w-4" />
+              Meal History
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="space-y-3">
-              <h4 className="font-semibold">Record Today's Meals</h4>
-              <div className="grid gap-3 md:grid-cols-3">
+          {/* Student Profile Card */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={selectedStudent.profile_image || undefined} />
+                  <AvatarFallback className="text-lg">
+                    {selectedStudent.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">{selectedStudent.full_name}</h3>
+                  <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted-foreground">
+                    <span className="font-mono">{selectedStudent.student_id}</span>
+                    <span>•</span>
+                    <span>{selectedStudent.grade}</span>
+                    <span>•</span>
+                    <span>{selectedStudent.sex}</span>
+                  </div>
+                  <div className="mt-2">
+                    <Badge
+                      variant={
+                        selectedStudent.status === "active"
+                          ? "default"
+                          : selectedStudent.status === "suspended"
+                          ? "destructive"
+                          : "secondary"
+                      }
+                    >
+                      {selectedStudent.status}
+                    </Badge>
+                  </div>
+                </div>
                 <Button
-                  onClick={() => recordMeal.mutate("breakfast")}
-                  disabled={hasMeal("breakfast") || selectedStudent.status !== "active"}
-                  variant={hasMeal("breakfast") ? "outline" : "default"}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedStudent(null)}
                 >
-                  {hasMeal("breakfast") && <Check className="mr-2 h-4 w-4" />}
-                  Breakfast
-                </Button>
-                <Button
-                  onClick={() => recordMeal.mutate("lunch")}
-                  disabled={hasMeal("lunch") || selectedStudent.status !== "active"}
-                  variant={hasMeal("lunch") ? "outline" : "default"}
-                >
-                  {hasMeal("lunch") && <Check className="mr-2 h-4 w-4" />}
-                  Lunch
-                </Button>
-                <Button
-                  onClick={() => recordMeal.mutate("dinner")}
-                  disabled={hasMeal("dinner") || selectedStudent.status !== "active"}
-                  variant={hasMeal("dinner") ? "outline" : "default"}
-                >
-                  {hasMeal("dinner") && <Check className="mr-2 h-4 w-4" />}
-                  Dinner
+                  Clear
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <TabsContent value="record">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Record Today's Meals</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedStudent.status !== "active" ? (
+                  <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
+                    <p className="text-sm text-destructive">
+                      Cannot record meals for {selectedStudent.status} students
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Button
+                      onClick={() => recordMeal.mutate("breakfast")}
+                      disabled={hasMeal("breakfast")}
+                      variant={hasMeal("breakfast") ? "outline" : "default"}
+                      size="lg"
+                      className="h-20 flex-col gap-2"
+                    >
+                      {hasMeal("breakfast") && <Check className="h-5 w-5" />}
+                      <span className="text-base font-semibold">Breakfast</span>
+                      <span className="text-xs opacity-80">
+                        {hasMeal("breakfast") ? "Recorded" : "Not recorded"}
+                      </span>
+                    </Button>
+                    <Button
+                      onClick={() => recordMeal.mutate("lunch")}
+                      disabled={hasMeal("lunch")}
+                      variant={hasMeal("lunch") ? "outline" : "default"}
+                      size="lg"
+                      className="h-20 flex-col gap-2"
+                    >
+                      {hasMeal("lunch") && <Check className="h-5 w-5" />}
+                      <span className="text-base font-semibold">Lunch</span>
+                      <span className="text-xs opacity-80">
+                        {hasMeal("lunch") ? "Recorded" : "Not recorded"}
+                      </span>
+                    </Button>
+                    <Button
+                      onClick={() => recordMeal.mutate("dinner")}
+                      disabled={hasMeal("dinner")}
+                      variant={hasMeal("dinner") ? "outline" : "default"}
+                      size="lg"
+                      className="h-20 flex-col gap-2"
+                    >
+                      {hasMeal("dinner") && <Check className="h-5 w-5" />}
+                      <span className="text-base font-semibold">Dinner</span>
+                      <span className="text-xs opacity-80">
+                        {hasMeal("dinner") ? "Recorded" : "Not recorded"}
+                      </span>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Recent Meal History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!mealHistory || mealHistory.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">
+                    No meal history found
+                  </p>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Meal Type</TableHead>
+                          <TableHead>Time</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {mealHistory.map((meal) => (
+                          <TableRow key={meal.id}>
+                            <TableCell>
+                              {format(new Date(meal.meal_date), "MMM d, yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="capitalize">
+                                {meal.meal_type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {format(new Date(meal.created_at), "h:mm a")}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
