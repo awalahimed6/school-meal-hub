@@ -42,6 +42,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, Filter, Upload, X } from "lucide-react";
 import { z } from "zod";
+import { CameraCapture } from "./CameraCapture";
 
 const studentSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -233,17 +234,21 @@ export const StudentManagement = () => {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image must be smaller than 5MB");
-        return;
-      }
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      handleImageFile(file);
     }
+  };
+
+  const handleImageFile = (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const filteredStudents = students?.filter((student) => {
@@ -290,13 +295,16 @@ export const StudentManagement = () => {
                       <Upload className="h-8 w-8 text-muted-foreground" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col gap-2">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageSelect}
-                      className="cursor-pointer"
-                    />
+                  <div className="flex flex-col gap-2 flex-1">
+                    <div className="flex gap-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="cursor-pointer flex-1"
+                      />
+                      <CameraCapture onCapture={handleImageFile} />
+                    </div>
                     {imagePreview && (
                       <Button
                         type="button"
