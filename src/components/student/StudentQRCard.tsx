@@ -54,24 +54,20 @@ export const StudentQRCard = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>My QR Code</CardTitle>
-        <CardDescription>
-          Show this code to staff for quick meal recording
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center gap-4">
-        <div className="bg-white p-4 rounded-xl">
-          <QRCode
-            value={student.student_id}
-            size={200}
-            level="M"
-          />
+    <Card className="rounded-[32px] shadow-2xl border-0 max-w-md w-full">
+      <CardContent className="flex flex-col items-center gap-6 p-8">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary to-purple-600 rounded-[28px] animate-pulse opacity-10 blur-2xl"></div>
+          <div className="bg-white p-6 rounded-[28px] shadow-xl relative">
+            <QRCode value={student.student_id} size={240} />
+          </div>
         </div>
-        <div className="text-center">
-          <p className="font-mono text-sm font-semibold">{student.student_id}</p>
-          <p className="text-sm text-muted-foreground">{student.full_name}</p>
+        <div className="text-center space-y-2">
+          <p className="text-sm text-muted-foreground font-medium">Student ID</p>
+          <p className="font-bold text-3xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            {student.student_id}
+          </p>
+          <p className="text-lg font-semibold mt-4">{student.full_name}</p>
         </div>
       </CardContent>
     </Card>
