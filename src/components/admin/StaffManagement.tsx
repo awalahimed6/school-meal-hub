@@ -93,9 +93,8 @@ export const StaffManagement = () => {
         }
 
         // Assign staff role using security definer function - CRITICAL: This must succeed
-        const { error: roleError } = await supabase.rpc("assign_role", {
+        const { error: roleError } = await supabase.rpc("create_staff_role", {
           _user_id: userId,
-          _role: "staff",
         });
 
         if (roleError) {
@@ -105,19 +104,7 @@ export const StaffManagement = () => {
           throw new Error(`Failed to assign staff role: ${roleError.message}`);
         }
 
-        // Verify the role was actually created
-        const { data: roleCheck, error: checkError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .single();
-
-        if (checkError || !roleCheck) {
-          console.error("Role verification failed:", checkError);
-          throw new Error("Role assignment verification failed. Please try again.");
-        }
-
-        console.log("Staff member created successfully with role:", roleCheck.role);
+        console.log("Staff member created successfully with staff role assigned");
       } catch (error) {
         // If anything fails after user creation, we should inform about cleanup
         console.error("Staff creation failed:", error);
