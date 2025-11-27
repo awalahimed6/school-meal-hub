@@ -147,6 +147,10 @@ export const StudentManagement = () => {
 
       if (!response.ok) {
         const error = await response.json();
+        // Provide clearer error messages for common issues
+        if (error.error?.includes("already been registered") || error.error?.includes("Email already registered")) {
+          throw new Error(`This email is already registered. Please use a different email address.`);
+        }
         throw new Error(error.error || "Failed to create student account");
       }
 
