@@ -9,7 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Utensils, Users } from "lucide-react";
+import { BarChart3, Utensils, Star, MessageSquare } from "lucide-react";
+import { format } from "date-fns";
 
 export const MealReports = () => {
   const { data: mealStats } = useQuery({
@@ -41,6 +42,44 @@ export const MealReports = () => {
       const { data, error } = await supabase
         .from("meals")
         .select("*, student:students(full_name, student_id)")
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Get average satisfaction score
+  const { data: satisfactionData } = useQuery({
+    queryKey: ["satisfaction-score"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("meal_ratings")
+        .select("rating");
+
+      if (error) throw error;
+
+      if (data.length === 0) {
+        return { average: 0, total: 0 };
+      }
+
+      const total = data.length;
+      const sum = data.reduce((acc, curr) => acc + curr.rating, 0);
+      const average = sum / total;
+
+      return { average, total };
+    },
+  });
+
+  // Get recent comments
+  const { data: recentComments } = useQuery({
+    queryKey: ["recent-comments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("meal_ratings")
+        .select("*, student:students(full_name, student_id)")
+        .not("comment", "is", null)
         .order("created_at", { ascending: false })
         .limit(10);
 
@@ -93,6 +132,91 @@ export const MealReports = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Satisfaction Score */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Average Satisfaction Score</CardTitle>
+          <Star className="h-4 w-4 text-warning" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">
+            {satisfactionData?.average ? satisfactionData.average.toFixed(1) : "N/A"}
+          </div>
+          {satisfactionData?.total ? (
+            <p className="text-xs text-muted-foreground mt-1">
+              Based on {satisfactionData.total} ratings
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">No ratings yet</p>
+          )}
+          <div className="flex items-center gap-1 mt-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                className={`h-4 w-4 ${
+                  star <= Math.round(satisfactionData?.average || 0)
+                    ? "fill-warning text-warning"
+                    : "text-muted-foreground"
+                }`}
+              />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Comments */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <CardTitle>Recent Student Feedback</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {recentComments && recentComments.length > 0 ? (
+            <div className="space-y-4">
+              {recentComments.map((rating) => (
+                <div
+                  key={rating.id}
+                  className="border-l-2 border-primary/30 pl-4 py-2"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">
+                          {rating.student?.full_name}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {rating.student?.student_id}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-3 w-3 ${
+                              star <= rating.rating
+                                ? "fill-warning text-warning"
+                                : "text-muted-foreground"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm italic">{rating.comment}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(rating.meal_date), "MMM dd")}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No feedback yet</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent Meals Table */}
       <Card>

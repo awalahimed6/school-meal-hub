@@ -13,6 +13,7 @@ import { StudentAnnouncements } from "@/components/student/StudentAnnouncements"
 import { StudentQRCard } from "@/components/student/StudentQRCard";
 import { StudentSettings } from "@/components/student/StudentSettings";
 import { TodayMenu } from "@/components/student/TodayMenu";
+import { MealRating } from "@/components/student/MealRating";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -85,6 +86,20 @@ const StudentDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <TodayMenu />
+                  </CardContent>
+                </Card>
+
+                {/* Rate Yesterday's Lunch */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Utensils className="h-5 w-5 text-warning" />
+                      <CardTitle>Rate Yesterday's Lunch</CardTitle>
+                    </div>
+                    <CardDescription>Share your feedback</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <MealRating />
                   </CardContent>
                 </Card>
 
