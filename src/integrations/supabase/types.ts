@@ -41,6 +41,44 @@ export type Database = {
         }
         Relationships: []
       }
+      meal_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          meal_date: string
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          rating: number
+          student_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          meal_date: string
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          rating: number
+          student_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          meal_date?: string
+          meal_type?: Database["public"]["Enums"]["meal_type"]
+          rating?: number
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_ratings_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meals: {
         Row: {
           created_at: string
