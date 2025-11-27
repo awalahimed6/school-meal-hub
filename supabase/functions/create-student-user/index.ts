@@ -167,7 +167,7 @@ serve(async (req) => {
         const appUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://your-app-url.com';
         
         await resend.emails.send({
-          from: "School Meal Hub <onboarding@resend.dev>",
+          from: "School Meal Hub <noreply@school-snap-meal.lovable.app>",
           to: [email],
           subject: "Welcome to School Meal Hub - Login Credentials",
           html: `
