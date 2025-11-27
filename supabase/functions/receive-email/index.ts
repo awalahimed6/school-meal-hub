@@ -28,22 +28,26 @@ serve(async (req) => {
         email_id: emailData.email_id,
       });
 
-      // Here you can implement different logic based on the recipient
-      // For example, route support emails differently than other emails
+      // Process emails sent to your Resend inbox
       const recipient = emailData.to[0] || "";
+      const fromAddress = emailData.from;
       
-      if (recipient.includes("support@")) {
-        console.log("Support email received - processing support request");
-        // TODO: Process support email
-        // - Fetch email content from Resend API
+      console.log("Processing email to:", recipient);
+      console.log("From:", fromAddress);
+      
+      // Handle emails based on the recipient or sender
+      if (recipient.includes("@xohonbo.resend.app")) {
+        console.log("Email received at Resend inbox - processing");
+        
+        // You can route based on what was sent to the inbox
+        // Example: support@school-snap-meal.lovable.app forwarded here
+        // Example: Parent/student replies to system emails
+        
+        // TODO: Implement your logic here:
         // - Store in database
-        // - Send notification to admin
-      } else if (recipient.includes("noreply@")) {
-        console.log("Reply to noreply address - could be auto-reply or bounce");
-        // TODO: Handle replies to noreply
-      } else {
-        console.log("General email received");
-        // TODO: Handle general emails
+        // - Notify admins
+        // - Auto-respond
+        // - Create support tickets
       }
 
       // Optionally fetch the full email content and attachments
