@@ -72,30 +72,61 @@ export const StaffManagement = () => {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create user");
 
-      // Generate unique staff ID
-      const { data: staffId } = await supabase.rpc("generate_staff_id");
+      const userId = authData.user.id;
 
-      // Create staff record
-      const { error: staffError } = await supabase.from("staff").insert({
-        staff_id: staffId,
-        full_name: fullName,
-        position,
-        user_id: authData.user.id,
-      });
+      try {
+        // Generate unique staff ID
+        const { data: staffId, error: idError } = await supabase.rpc("generate_staff_id");
+        if (idError) throw idError;
 
-      if (staffError) throw staffError;
+        // Create staff record
+        const { error: staffError } = await supabase.from("staff").insert({
+          staff_id: staffId,
+          full_name: fullName,
+          position,
+          user_id: userId,
+        });
 
-      // Assign staff role
-      const { error: roleError } = await supabase.from("user_roles").insert({
-        user_id: authData.user.id,
-        role: "staff",
-      });
+        if (staffError) {
+          console.error("Staff record creation failed:", staffError);
+          throw new Error(`Failed to create staff record: ${staffError.message}`);
+        }
 
-      if (roleError) throw roleError;
+        // Assign staff role - CRITICAL: This must succeed
+        const { error: roleError } = await supabase.from("user_roles").insert({
+          user_id: userId,
+          role: "staff",
+        });
+
+        if (roleError) {
+          console.error("Role assignment failed:", roleError);
+          // Try to clean up staff record if role assignment fails
+          await supabase.from("staff").delete().eq("user_id", userId);
+          throw new Error(`Failed to assign staff role: ${roleError.message}`);
+        }
+
+        // Verify the role was actually created
+        const { data: roleCheck, error: checkError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .single();
+
+        if (checkError || !roleCheck) {
+          console.error("Role verification failed:", checkError);
+          throw new Error("Role assignment verification failed. Please try again.");
+        }
+
+        console.log("Staff member created successfully with role:", roleCheck.role);
+      } catch (error) {
+        // If anything fails after user creation, we should inform about cleanup
+        console.error("Staff creation failed:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff"] });
-      toast.success("Staff member created successfully");
+      toast.success("Staff member created successfully with staff role assigned");
       setIsOpen(false);
     },
     onError: (error: any) => {
