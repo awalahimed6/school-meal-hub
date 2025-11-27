@@ -11,6 +11,7 @@ interface CameraCaptureProps {
 export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -21,8 +22,12 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
         audio: false,
       });
       setStream(mediaStream);
+      setIsVideoReady(false);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        videoRef.current.onloadedmetadata = () => {
+          setIsVideoReady(true);
+        };
       }
       setIsOpen(true);
     } catch (error) {
@@ -36,24 +41,41 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
     }
+    setIsVideoReady(false);
     setIsOpen(false);
   };
 
   const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current) {
+      toast.error("Camera not ready");
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    
+    // Check if video dimensions are valid
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      toast.error("Video not ready. Please wait a moment.");
+      return;
+    }
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     const context = canvas.getContext("2d");
-    if (!context) return;
+    if (!context) {
+      toast.error("Failed to get canvas context");
+      return;
+    }
 
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     canvas.toBlob((blob) => {
-      if (!blob) return;
+      if (!blob) {
+        toast.error("Failed to create image");
+        return;
+      }
       const file = new File([blob], `photo-${Date.now()}.jpg`, { type: "image/jpeg" });
       onCapture(file);
       stopCamera();
@@ -84,9 +106,13 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
             </div>
             <canvas ref={canvasRef} className="hidden" />
             <div className="flex gap-2">
-              <Button onClick={capturePhoto} className="flex-1">
+              <Button 
+                onClick={capturePhoto} 
+                className="flex-1"
+                disabled={!isVideoReady}
+              >
                 <Camera className="mr-2 h-4 w-4" />
-                Capture
+                {isVideoReady ? "Capture" : "Loading..."}
               </Button>
               <Button variant="outline" onClick={stopCamera}>
                 <X className="mr-2 h-4 w-4" />
