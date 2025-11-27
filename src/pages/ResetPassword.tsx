@@ -69,6 +69,21 @@ const ResetPassword = () => {
 
       if (error) throw error;
 
+      // Get user email for confirmation
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Send confirmation email
+      if (user?.email) {
+        try {
+          await supabase.functions.invoke("send-password-change-confirmation", {
+            body: { email: user.email },
+          });
+        } catch (emailError) {
+          console.error("Failed to send confirmation email:", emailError);
+          // Don't block the flow if email fails
+        }
+      }
+
       toast.success("Password updated successfully! Please log in with your new password.");
       navigate("/auth");
     } catch (error) {
