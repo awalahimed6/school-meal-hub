@@ -46,6 +46,7 @@ import { CameraCapture } from "./CameraCapture";
 
 const studentSchema = z.object({
   email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   full_name: z.string().min(2, "Name must be at least 2 characters").max(100),
   grade: z.string().min(1, "Grade is required"),
   sex: z.enum(["Male", "Female", "Other"]),
@@ -99,12 +100,13 @@ export const StudentManagement = () => {
   const createStudent = useMutation({
     mutationFn: async (formData: FormData) => {
       const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
       const fullName = formData.get("full_name") as string;
       const grade = formData.get("grade") as string;
       const sex = formData.get("sex") as string;
       const status = formData.get("status") as string;
 
-      studentSchema.parse({ email, full_name: fullName, grade, sex, status });
+      studentSchema.parse({ email, password, full_name: fullName, grade, sex, status });
 
       let profileImageUrl = null;
 
@@ -136,6 +138,7 @@ export const StudentManagement = () => {
           },
           body: JSON.stringify({
             email,
+            password,
             fullName,
             grade,
             sex,
@@ -374,16 +377,28 @@ export const StudentManagement = () => {
                 </div>
               </div>
               {!editingStudent && (
-                <div className="space-y-2">
-                  <Label htmlFor="email">Student Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="student@example.com"
-                    required
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Student Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="student@example.com"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="text"
+                      placeholder="Enter password (min 6 characters)"
+                      required
+                    />
+                  </div>
+                </>
               )}
               <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name</Label>
