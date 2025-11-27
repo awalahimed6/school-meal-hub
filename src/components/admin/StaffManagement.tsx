@@ -92,10 +92,10 @@ export const StaffManagement = () => {
           throw new Error(`Failed to create staff record: ${staffError.message}`);
         }
 
-        // Assign staff role - CRITICAL: This must succeed
-        const { error: roleError } = await supabase.from("user_roles").insert({
-          user_id: userId,
-          role: "staff",
+        // Assign staff role using security definer function - CRITICAL: This must succeed
+        const { error: roleError } = await supabase.rpc("assign_role", {
+          _user_id: userId,
+          _role: "staff",
         });
 
         if (roleError) {
