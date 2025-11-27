@@ -45,6 +45,7 @@ import { z } from "zod";
 import { CameraCapture } from "./CameraCapture";
 
 const studentSchema = z.object({
+  email: z.string().email("Invalid email address"),
   full_name: z.string().min(2, "Name must be at least 2 characters").max(100),
   grade: z.string().min(1, "Grade is required"),
   sex: z.enum(["Male", "Female", "Other"]),
@@ -97,24 +98,22 @@ export const StudentManagement = () => {
 
   const createStudent = useMutation({
     mutationFn: async (formData: FormData) => {
+      const email = formData.get("email") as string;
       const fullName = formData.get("full_name") as string;
       const grade = formData.get("grade") as string;
       const sex = formData.get("sex") as string;
       const status = formData.get("status") as string;
 
-      studentSchema.parse({ full_name: fullName, grade, sex, status });
-
-      // Generate unique student ID
-      const { data: idData } = await supabase.rpc("generate_student_id");
-      const studentId = idData as string;
+      studentSchema.parse({ email, full_name: fullName, grade, sex, status });
 
       let profileImageUrl = null;
 
-      // Upload image if selected
+      // Upload image if selected (we'll get a temp ID for upload)
       if (selectedImage) {
         setUploading(true);
         try {
-          profileImageUrl = await uploadImage(selectedImage, studentId);
+          const tempId = `temp-${Date.now()}`;
+          profileImageUrl = await uploadImage(selectedImage, tempId);
         } catch (error) {
           console.error("Image upload error:", error);
           toast.error("Failed to upload image, but student will be created");
@@ -123,16 +122,35 @@ export const StudentManagement = () => {
         }
       }
 
-      const { error } = await supabase.from("students").insert({
-        student_id: studentId,
-        full_name: fullName,
-        grade,
-        sex,
-        status: status as "active" | "suspended" | "under_standard",
-        profile_image: profileImageUrl,
-      });
+      // Call the edge function to create student user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
 
-      if (error) throw error;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-student-user`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            fullName,
+            grade,
+            sex,
+            status,
+            profileImage: profileImageUrl,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create student account");
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["students"] });
@@ -152,7 +170,9 @@ export const StudentManagement = () => {
       const sex = formData.get("sex") as string;
       const status = formData.get("status") as string;
 
-      studentSchema.parse({ full_name: fullName, grade, sex, status });
+      // Validate without email for updates
+      const updateSchema = studentSchema.omit({ email: true });
+      updateSchema.parse({ full_name: fullName, grade, sex, status });
 
       let profileImageUrl = editingStudent?.profile_image;
 
@@ -322,6 +342,18 @@ export const StudentManagement = () => {
                   </div>
                 </div>
               </div>
+              {!editingStudent && (
+                <div className="space-y-2">
+                  <Label htmlFor="email">Student Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="student@example.com"
+                    required
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name</Label>
                 <Input
