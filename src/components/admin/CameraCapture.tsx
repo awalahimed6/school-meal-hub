@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Camera, X } from "lucide-react";
@@ -29,12 +29,16 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
           setIsVideoReady(true);
         };
       }
-      setIsOpen(true);
     } catch (error) {
       toast.error("Failed to access camera. Please check permissions.");
       console.error("Camera error:", error);
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    startCamera();
+  }, [isOpen]);
 
   const stopCamera = () => {
     if (stream) {
@@ -85,12 +89,12 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
 
   return (
     <>
-      <Button type="button" variant="outline" onClick={startCamera}>
+      <Button type="button" variant="outline" onClick={() => setIsOpen(true)}>
         <Camera className="mr-2 h-4 w-4" />
         Take Photo
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={(open) => !open && stopCamera()}>
+      <Dialog open={isOpen} onOpenChange={(open) => { if (!open) stopCamera(); else setIsOpen(true); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Capture Photo</DialogTitle>
