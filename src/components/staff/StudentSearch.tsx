@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,30 @@ import { Search, Check, History, Utensils } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 
-export const StudentSearch = () => {
+interface StudentSearchProps {
+  externalSearchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
+}
+
+export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: StudentSearchProps = {}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
+
+  // Sync external search query with internal state
+  useEffect(() => {
+    if (externalSearchQuery && externalSearchQuery !== searchQuery) {
+      setSearchQuery(externalSearchQuery);
+    }
+  }, [externalSearchQuery]);
+
+  const handleSearchQueryChange = (value: string) => {
+    setSearchQuery(value);
+    if (onSearchQueryChange) {
+      onSearchQueryChange(value);
+    }
+  };
 
   const { data: searchResults, isLoading: searchLoading } = useQuery({
     queryKey: ["student-search", searchQuery],
@@ -134,7 +153,7 @@ export const StudentSearch = () => {
             id="student-search"
             placeholder="Search by student ID or name..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchQueryChange(e.target.value)}
             className="pl-9"
           />
         </div>
