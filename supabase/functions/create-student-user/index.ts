@@ -62,7 +62,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { email, password, fullName, grade, sex, status, profileImage } = await req.json();
+    const { email, password, fullName, grade, sex, status, profileImage, allergies, dietary_needs } = await req.json();
 
     if (!email || !fullName || !grade || !sex) {
       return new Response(
@@ -146,6 +146,8 @@ serve(async (req) => {
           sex,
           status: status || "active",
           profile_image: profileImage || null,
+          allergies: allergies || null,
+          dietary_needs: dietary_needs || null,
         });
 
       if (studentError) {

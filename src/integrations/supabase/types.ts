@@ -132,7 +132,9 @@ export type Database = {
       }
       students: {
         Row: {
+          allergies: string | null
           created_at: string
+          dietary_needs: string | null
           full_name: string
           grade: string
           id: string
@@ -144,7 +146,9 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          allergies?: string | null
           created_at?: string
+          dietary_needs?: string | null
           full_name: string
           grade: string
           id?: string
@@ -156,7 +160,9 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          allergies?: string | null
           created_at?: string
+          dietary_needs?: string | null
           full_name?: string
           grade?: string
           id?: string

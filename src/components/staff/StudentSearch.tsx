@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Search, Check, History, Utensils } from "lucide-react";
+import { Search, Check, History, Utensils, AlertTriangle, Info } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 
@@ -259,6 +260,29 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
               </div>
             </CardContent>
           </Card>
+
+          {/* Safety Alerts */}
+          {selectedStudent.allergies && (
+            <Alert variant="destructive" className="border-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle className="font-bold">Critical: Allergies</AlertTitle>
+              <AlertDescription className="text-sm whitespace-pre-wrap">
+                {selectedStudent.allergies}
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {selectedStudent.dietary_needs && (
+            <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="text-blue-900 dark:text-blue-100 font-semibold">
+                Dietary Needs
+              </AlertTitle>
+              <AlertDescription className="text-blue-800 dark:text-blue-200 text-sm whitespace-pre-wrap">
+                {selectedStudent.dietary_needs}
+              </AlertDescription>
+            </Alert>
+          )}
 
           <TabsContent value="record">
             <Card>

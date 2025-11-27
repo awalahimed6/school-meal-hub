@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -51,6 +52,8 @@ const studentSchema = z.object({
   grade: z.string().min(1, "Grade is required"),
   sex: z.enum(["Male", "Female", "Other"]),
   status: z.enum(["active", "suspended", "under_standard"]),
+  allergies: z.string().optional(),
+  dietary_needs: z.string().optional(),
 });
 
 export const StudentManagement = () => {
@@ -105,8 +108,10 @@ export const StudentManagement = () => {
       const grade = formData.get("grade") as string;
       const sex = formData.get("sex") as string;
       const status = formData.get("status") as string;
+      const allergies = formData.get("allergies") as string;
+      const dietary_needs = formData.get("dietary_needs") as string;
 
-      studentSchema.parse({ email, password, full_name: fullName, grade, sex, status });
+      studentSchema.parse({ email, password, full_name: fullName, grade, sex, status, allergies, dietary_needs });
 
       let profileImageUrl = null;
 
@@ -144,6 +149,8 @@ export const StudentManagement = () => {
             sex,
             status,
             profileImage: profileImageUrl,
+            allergies,
+            dietary_needs,
           }),
         }
       );
@@ -184,10 +191,12 @@ export const StudentManagement = () => {
       const grade = formData.get("grade") as string;
       const sex = formData.get("sex") as string;
       const status = formData.get("status") as string;
+      const allergies = formData.get("allergies") as string;
+      const dietary_needs = formData.get("dietary_needs") as string;
 
       // Validate without email for updates
-      const updateSchema = studentSchema.omit({ email: true });
-      updateSchema.parse({ full_name: fullName, grade, sex, status });
+      const updateSchema = studentSchema.omit({ email: true, password: true });
+      updateSchema.parse({ full_name: fullName, grade, sex, status, allergies, dietary_needs });
 
       let profileImageUrl = editingStudent?.profile_image;
 
@@ -212,6 +221,8 @@ export const StudentManagement = () => {
           sex,
           status: status as "active" | "suspended" | "under_standard",
           profile_image: profileImageUrl,
+          allergies,
+          dietary_needs,
         })
         .eq("id", id);
 
@@ -438,6 +449,30 @@ export const StudentManagement = () => {
                     <SelectItem value="under_standard">Under Standard</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="allergies">
+                  Allergies <span className="text-destructive font-semibold">(Critical)</span>
+                </Label>
+                <Textarea
+                  id="allergies"
+                  name="allergies"
+                  placeholder="List any known allergies (e.g., peanuts, dairy, shellfish)..."
+                  defaultValue={editingStudent?.allergies || ""}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dietary_needs">Dietary Needs</Label>
+                <Textarea
+                  id="dietary_needs"
+                  name="dietary_needs"
+                  placeholder="List any dietary restrictions (e.g., vegetarian, halal, gluten-free)..."
+                  defaultValue={editingStudent?.dietary_needs || ""}
+                  rows={3}
+                  className="resize-none"
+                />
               </div>
               <Button type="submit" className="w-full" disabled={uploading}>
                 {uploading ? "Uploading..." : editingStudent ? "Update Student" : "Create Student"}
