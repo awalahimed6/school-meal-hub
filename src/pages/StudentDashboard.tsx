@@ -9,6 +9,7 @@ import { LogOut, User, Utensils, Calendar, Bell } from "lucide-react";
 import { StudentProfile } from "@/components/student/StudentProfile";
 import { StudentMealHistory } from "@/components/student/StudentMealHistory";
 import { StudentAnnouncements } from "@/components/student/StudentAnnouncements";
+import { StudentQRCard } from "@/components/student/StudentQRCard";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -53,6 +54,9 @@ const StudentDashboard = () => {
                 <StudentProfile />
               </CardContent>
             </Card>
+
+            {/* QR Code */}
+            <StudentQRCard />
 
             {/* Announcements */}
             <Card>

@@ -8,10 +8,13 @@ import { useNavigate } from "react-router-dom";
 import { LogOut, Search, Utensils, Bell } from "lucide-react";
 import { StudentSearch } from "@/components/staff/StudentSearch";
 import { AnnouncementManager } from "@/components/staff/AnnouncementManager";
+import { QRScanner } from "@/components/staff/QRScanner";
+import { useState } from "react";
 
 const StaffDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [qrSearchQuery, setQrSearchQuery] = useState("");
 
   const handleSignOut = async () => {
     await signOut();
@@ -39,6 +42,13 @@ const StaffDashboard = () => {
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
           <div className="grid gap-6 lg:grid-cols-2">
+            {/* QR Scanner */}
+            <Card>
+              <CardContent className="pt-6">
+                <QRScanner onStudentIdScanned={setQrSearchQuery} />
+              </CardContent>
+            </Card>
+
             {/* Student Search & Meal Recording */}
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -47,11 +57,11 @@ const StaffDashboard = () => {
                   <CardTitle>Student Meal Recording</CardTitle>
                 </div>
                 <CardDescription>
-                  Search for students by ID and record their meals
+                  Search for students by ID or scan their QR code
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <StudentSearch />
+                <StudentSearch externalSearchQuery={qrSearchQuery} onSearchQueryChange={setQrSearchQuery} />
               </CardContent>
             </Card>
 
