@@ -145,16 +145,24 @@ export const StudentManagement = () => {
         }
       );
 
-      if (!response.ok) {
-        const error = await response.json();
-        // Provide clearer error messages for common issues
-        if (error.error?.includes("already been registered") || error.error?.includes("Email already registered")) {
-          throw new Error(`This email is already registered. Please use a different email address.`);
-        }
-        throw new Error(error.error || "Failed to create student account");
+      const data = await response.json();
+
+      // Even if the edge function returns 200, it may include an error field
+      if (
+        data?.code === "email_exists" ||
+        typeof data?.error === "string" &&
+        (data.error.includes("already been registered") ||
+         data.error.includes("Email already registered"))
+      ) {
+        throw new Error("This email is already registered. Please use a different email address.");
       }
 
-      return await response.json();
+      if (!response.ok) {
+        // Provide clearer error messages for other issues
+        throw new Error(data.error || "Failed to create student account");
+      }
+
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["students"] });

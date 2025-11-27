@@ -95,10 +95,17 @@ serve(async (req) => {
 
     if (createError) {
       console.error("Error creating user:", createError);
-      if (createError.message.includes("already registered")) {
+      // Handle case where email is already registered in a graceful way
+      if (
+        createError.message.includes("already registered") ||
+        (createError as any).code === "email_exists"
+      ) {
         return new Response(
-          JSON.stringify({ error: "Email already registered" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            error: "Email already registered",
+            code: "email_exists",
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       return new Response(
