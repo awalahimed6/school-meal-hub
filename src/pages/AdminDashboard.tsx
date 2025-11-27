@@ -6,10 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Users, UserCog, BarChart3, LogOut } from "lucide-react";
+import { Users, UserCog, BarChart3, LogOut, UtensilsCrossed } from "lucide-react";
 import { StudentManagement } from "@/components/admin/StudentManagement";
 import { StaffManagement } from "@/components/admin/StaffManagement";
 import { MealReports } from "@/components/admin/MealReports";
+import { MenuManager } from "@/components/admin/MenuManager";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -41,7 +42,7 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
           <Tabs defaultValue="students" className="space-y-6">
-            <TabsList className="grid w-full max-w-2xl grid-cols-3">
+            <TabsList className="grid w-full max-w-3xl grid-cols-4">
               <TabsTrigger value="students">
                 <Users className="mr-2 h-4 w-4" />
                 Students
@@ -53,6 +54,10 @@ const AdminDashboard = () => {
               <TabsTrigger value="reports">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Reports
+              </TabsTrigger>
+              <TabsTrigger value="menu">
+                <UtensilsCrossed className="mr-2 h-4 w-4" />
+                Menu
               </TabsTrigger>
             </TabsList>
 
@@ -94,6 +99,20 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <MealReports />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="menu" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Menu Manager</CardTitle>
+                  <CardDescription>
+                    Manage weekly menu items for breakfast, lunch, and dinner
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <MenuManager />
                 </CardContent>
               </Card>
             </TabsContent>

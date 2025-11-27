@@ -196,6 +196,33 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_menus: {
+        Row: {
+          created_at: string
+          date: string
+          description: string
+          id: string
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description: string
+          id?: string
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          meal_type?: Database["public"]["Enums"]["meal_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

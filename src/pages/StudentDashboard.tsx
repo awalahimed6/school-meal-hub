@@ -6,12 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { LogOut, User, Utensils, Calendar, Bell, Settings } from "lucide-react";
+import { LogOut, User, Utensils, Calendar, Bell, Settings, UtensilsCrossed } from "lucide-react";
 import { StudentProfile } from "@/components/student/StudentProfile";
 import { StudentMealHistory } from "@/components/student/StudentMealHistory";
 import { StudentAnnouncements } from "@/components/student/StudentAnnouncements";
 import { StudentQRCard } from "@/components/student/StudentQRCard";
 import { StudentSettings } from "@/components/student/StudentSettings";
+import { TodayMenu } from "@/components/student/TodayMenu";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -72,6 +73,20 @@ const StudentDashboard = () => {
 
                 {/* QR Code */}
                 <StudentQRCard />
+
+                {/* Today's Menu */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <UtensilsCrossed className="h-5 w-5 text-accent" />
+                      <CardTitle>Today's Menu</CardTitle>
+                    </div>
+                    <CardDescription>What's being served today</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <TodayMenu />
+                  </CardContent>
+                </Card>
 
                 {/* Announcements */}
                 <Card>
