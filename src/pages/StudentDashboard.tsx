@@ -89,12 +89,12 @@ const StudentDashboard = () => {
                   </CardContent>
                 </Card>
 
-                {/* Rate Yesterday's Lunch */}
+                {/* Rate Today's Lunch */}
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <Utensils className="h-5 w-5 text-warning" />
-                      <CardTitle>Rate Yesterday's Lunch</CardTitle>
+                      <CardTitle>Rate Today's Lunch</CardTitle>
                     </div>
                     <CardDescription>Share your feedback</CardDescription>
                   </CardHeader>

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
-import { format, subDays } from "date-fns";
+import { format } from "date-fns";
 
 export const MealRating = () => {
   const { user } = useAuth();
@@ -15,7 +15,7 @@ export const MealRating = () => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
+  const today = format(new Date(), "yyyy-MM-dd");
 
   // Get student ID
   const { data: student } = useQuery({
@@ -33,15 +33,15 @@ export const MealRating = () => {
     enabled: !!user,
   });
 
-  // Check if student ate lunch yesterday
-  const { data: yesterdayMeal, isLoading: loadingMeal } = useQuery({
-    queryKey: ["yesterday-meal", student?.id, yesterday],
+  // Check if student ate lunch today
+  const { data: todayMeal, isLoading: loadingMeal } = useQuery({
+    queryKey: ["today-meal", student?.id, today],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("meals")
         .select("*")
         .eq("student_id", student?.id)
-        .eq("meal_date", yesterday)
+        .eq("meal_date", today)
         .eq("meal_type", "lunch")
         .maybeSingle();
 
@@ -53,13 +53,13 @@ export const MealRating = () => {
 
   // Check if already rated
   const { data: existingRating, isLoading: loadingRating } = useQuery({
-    queryKey: ["meal-rating", student?.id, yesterday],
+    queryKey: ["meal-rating", student?.id, today],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("meal_ratings")
         .select("*")
         .eq("student_id", student?.id)
-        .eq("meal_date", yesterday)
+        .eq("meal_date", today)
         .eq("meal_type", "lunch")
         .maybeSingle();
 
@@ -75,7 +75,7 @@ export const MealRating = () => {
 
       const { error } = await supabase.from("meal_ratings").insert({
         student_id: student.id,
-        meal_date: yesterday,
+        meal_date: today,
         meal_type: "lunch",
         rating,
         comment: comment.trim() || null,
@@ -98,10 +98,10 @@ export const MealRating = () => {
     return <div className="text-sm text-muted-foreground">Loading...</div>;
   }
 
-  if (!yesterdayMeal) {
+  if (!todayMeal) {
     return (
       <div className="text-sm text-muted-foreground">
-        You didn't have lunch yesterday.
+        You didn't have lunch today yet.
       </div>
     );
   }
@@ -127,7 +127,7 @@ export const MealRating = () => {
           </p>
         )}
         <p className="text-xs text-muted-foreground">
-          You rated yesterday's lunch. Thank you!
+          You rated today's lunch. Thank you!
         </p>
       </div>
     );
@@ -136,7 +136,7 @@ export const MealRating = () => {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-sm font-medium mb-2">How was yesterday's lunch?</p>
+        <p className="text-sm font-medium mb-2">How was today's lunch?</p>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
