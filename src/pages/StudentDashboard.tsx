@@ -1,23 +1,22 @@
+import { useState } from "react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { LogOut, User, Utensils, Calendar, Bell, Settings, UtensilsCrossed } from "lucide-react";
-import { StudentProfile } from "@/components/student/StudentProfile";
-import { StudentMealHistory } from "@/components/student/StudentMealHistory";
-import { StudentAnnouncements } from "@/components/student/StudentAnnouncements";
-import { StudentQRCard } from "@/components/student/StudentQRCard";
-import { StudentSettings } from "@/components/student/StudentSettings";
-import { TodayMenu } from "@/components/student/TodayMenu";
-import { MealRating } from "@/components/student/MealRating";
+import { LogOut, Home, UtensilsCrossed, History, User } from "lucide-react";
+import { StudentHome } from "@/components/student/StudentHome";
+import { StudentMenuView } from "@/components/student/StudentMenuView";
+import { StudentHistoryView } from "@/components/student/StudentHistoryView";
+import { StudentProfileView } from "@/components/student/StudentProfileView";
+
+type TabType = "home" | "menu" | "history" | "profile";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<TabType>("home");
 
   const handleSignOut = async () => {
     await signOut();
@@ -25,119 +24,73 @@ const StudentDashboard = () => {
     navigate("/");
   };
 
+  const navItems = [
+    { id: "home" as TabType, icon: Home, label: "Home" },
+    { id: "menu" as TabType, icon: UtensilsCrossed, label: "Menu" },
+    { id: "history" as TabType, icon: History, label: "History" },
+    { id: "profile" as TabType, icon: User, label: "Profile" },
+  ];
+
   return (
     <ProtectedRoute allowedRoles={["student"]}>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="border-b bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/30">
-          <div className="container mx-auto flex items-center justify-between px-4 py-6">
+        <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b">
+          <div className="container mx-auto flex items-center justify-between px-4 py-4">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Student Dashboard</h1>
-              <p className="text-sm text-muted-foreground mt-1">{user?.email}</p>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                Student Portal
+              </h1>
+              <p className="text-xs text-muted-foreground mt-0.5">{user?.email}</p>
             </div>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
+            <Button variant="ghost" size="icon" onClick={handleSignOut} className="rounded-full">
+              <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </header>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 py-8">
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
-              <TabsTrigger value="overview">
-                <User className="mr-2 h-4 w-4" />
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="settings">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid gap-6 lg:grid-cols-2">
-                {/* Profile */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <User className="h-5 w-5 text-primary" />
-                      <CardTitle>My Profile</CardTitle>
-                    </div>
-                    <CardDescription>View your student information</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <StudentProfile />
-                  </CardContent>
-                </Card>
-
-                {/* QR Code */}
-                <StudentQRCard />
-
-                {/* Today's Menu */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <UtensilsCrossed className="h-5 w-5 text-accent" />
-                      <CardTitle>Today's Menu</CardTitle>
-                    </div>
-                    <CardDescription>What's being served today</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <TodayMenu />
-                  </CardContent>
-                </Card>
-
-                {/* Rate Today's Lunch */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Utensils className="h-5 w-5 text-warning" />
-                      <CardTitle>Rate Today's Lunch</CardTitle>
-                    </div>
-                    <CardDescription>Share your feedback</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <MealRating />
-                  </CardContent>
-                </Card>
-
-                {/* Announcements */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Bell className="h-5 w-5 text-warning" />
-                      <CardTitle>Announcements</CardTitle>
-                    </div>
-                    <CardDescription>Latest updates from cafeteria staff</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <StudentAnnouncements />
-                  </CardContent>
-                </Card>
-
-                {/* Meal History */}
-                <Card className="lg:col-span-2">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-secondary" />
-                      <CardTitle>Meal History</CardTitle>
-                    </div>
-                    <CardDescription>Track your meal consumption</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <StudentMealHistory />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="settings">
-              <StudentSettings />
-            </TabsContent>
-          </Tabs>
+        <main className="container mx-auto px-4 py-6">
+          {activeTab === "home" && <StudentHome />}
+          {activeTab === "menu" && <StudentMenuView />}
+          {activeTab === "history" && <StudentHistoryView />}
+          {activeTab === "profile" && <StudentProfileView />}
         </main>
+
+        {/* Floating Bottom Navigation */}
+        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md">
+          <div className="bg-gray-900 rounded-[32px] shadow-2xl px-6 py-4">
+            <div className="flex items-center justify-around">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex flex-col items-center gap-1 transition-all duration-200 ${
+                      isActive
+                        ? "text-white scale-110"
+                        : "text-gray-400 hover:text-gray-300"
+                    }`}
+                  >
+                    <div
+                      className={`p-3 rounded-2xl transition-all duration-200 ${
+                        isActive
+                          ? "bg-primary"
+                          : "bg-transparent"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-medium">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </nav>
       </div>
     </ProtectedRoute>
   );
