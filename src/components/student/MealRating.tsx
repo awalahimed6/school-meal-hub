@@ -178,7 +178,6 @@ const MealRatingSection = ({
 
 export const MealRating = () => {
   const { user } = useAuth();
-  const today = format(new Date(), "yyyy-MM-dd");
 
   // Get student ID
   const { data: student } = useQuery({
@@ -196,15 +195,20 @@ export const MealRating = () => {
     enabled: !!user,
   });
 
-  // Check if student had any meals today
-  const { data: todayMeals, isLoading } = useQuery({
-    queryKey: ["today-meals", student?.id, today],
+  // Get recent meals (last 3 days) to handle timezone issues
+  const { data: recentMeals, isLoading } = useQuery({
+    queryKey: ["recent-meals", student?.id],
     queryFn: async () => {
+      const threeDaysAgo = format(
+        new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        "yyyy-MM-dd"
+      );
       const { data, error } = await supabase
         .from("meals")
         .select("*")
         .eq("student_id", student?.id)
-        .eq("meal_date", today);
+        .gte("meal_date", threeDaysAgo)
+        .order("meal_date", { ascending: false });
 
       if (error) throw error;
       return data;
@@ -216,22 +220,28 @@ export const MealRating = () => {
     return <div className="text-sm text-muted-foreground">Loading...</div>;
   }
 
-  if (!todayMeals || todayMeals.length === 0) {
+  if (!recentMeals || recentMeals.length === 0) {
     return (
       <div className="text-sm text-muted-foreground">
-        You haven't had any meals today yet.
+        You haven't had any recent meals to rate.
       </div>
     );
   }
 
+  // Get the most recent meal date
+  const latestMealDate = recentMeals[0].meal_date;
+
   return (
     <div className="space-y-4">
+      <p className="text-sm text-muted-foreground mb-2">
+        Rating meals from {format(new Date(latestMealDate), "MMMM d, yyyy")}
+      </p>
       {(["breakfast", "lunch", "dinner"] as MealType[]).map((mealType) => (
         <MealRatingSection
           key={mealType}
           mealType={mealType}
           studentId={student!.id}
-          today={today}
+          today={latestMealDate}
         />
       ))}
     </div>
