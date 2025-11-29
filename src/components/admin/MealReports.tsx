@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -9,10 +9,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Utensils, Star, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BarChart3, Utensils, Star, MessageSquare, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 export const MealReports = () => {
+  const queryClient = useQueryClient();
+  
   const { data: mealStats } = useQuery({
     queryKey: ["meal-stats"],
     queryFn: async () => {
@@ -72,19 +76,42 @@ export const MealReports = () => {
     },
   });
 
-  // Get recent comments
+  // Get recent comments (last 2 days only)
   const { data: recentComments } = useQuery({
     queryKey: ["recent-comments"],
     queryFn: async () => {
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      
       const { data, error } = await supabase
         .from("meal_ratings")
         .select("*, student:students(full_name, student_id)")
         .not("comment", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(10);
+        .gte("created_at", twoDaysAgo.toISOString())
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
+    },
+  });
+
+  // Delete feedback mutation
+  const deleteFeedback = useMutation({
+    mutationFn: async (ratingId: string) => {
+      const { error } = await supabase
+        .from("meal_ratings")
+        .delete()
+        .eq("id", ratingId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Feedback deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["recent-comments"] });
+      queryClient.invalidateQueries({ queryKey: ["satisfaction-score"] });
+    },
+    onError: () => {
+      toast.error("Failed to delete feedback");
     },
   });
 
@@ -168,9 +195,11 @@ export const MealReports = () => {
       {/* Recent Comments */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
-            <CardTitle>Recent Student Feedback</CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" />
+              <CardTitle>Recent Student Feedback (Last 2 Days)</CardTitle>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -181,8 +210,8 @@ export const MealReports = () => {
                   key={rating.id}
                   className="border-l-2 border-primary/30 pl-4 py-2"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">
                           {rating.student?.full_name}
@@ -204,16 +233,25 @@ export const MealReports = () => {
                         ))}
                       </div>
                       <p className="text-sm italic">{rating.comment}</p>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(rating.created_at), "MMM dd, yyyy 'at' h:mm a")}
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(rating.meal_date), "MMM dd")}
-                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteFeedback.mutate(rating.id)}
+                      disabled={deleteFeedback.isPending}
+                      className="shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No feedback yet</p>
+            <p className="text-sm text-muted-foreground">No recent feedback (last 2 days)</p>
           )}
         </CardContent>
       </Card>
