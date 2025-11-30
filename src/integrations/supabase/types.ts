@@ -46,6 +46,7 @@ export type Database = {
           comment: string | null
           created_at: string
           id: string
+          image_url: string | null
           meal_date: string
           meal_type: Database["public"]["Enums"]["meal_type"]
           rating: number
@@ -55,6 +56,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           meal_date: string
           meal_type: Database["public"]["Enums"]["meal_type"]
           rating: number
@@ -64,6 +66,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           meal_date?: string
           meal_type?: Database["public"]["Enums"]["meal_type"]
           rating?: number

@@ -90,7 +90,6 @@ export const MealReports = () => {
       const { data, error } = await supabase
         .from("meal_ratings")
         .select("*, student:students(full_name, student_id)")
-        .not("comment", "is", null)
         .gte("created_at", twoDaysAgo.toISOString())
         .order("created_at", { ascending: false });
 
@@ -287,7 +286,7 @@ export const MealReports = () => {
                   className="border-l-2 border-primary/30 pl-4 py-2"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1 flex-1">
+                    <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">
                           {rating.student?.full_name}
@@ -308,8 +307,18 @@ export const MealReports = () => {
                           />
                         ))}
                       </div>
-                      <p className="text-sm italic">{rating.comment}</p>
-                      <span className="text-xs text-muted-foreground">
+                      {rating.comment && (
+                        <p className="text-sm italic">{rating.comment}</p>
+                      )}
+                      {rating.image_url && (
+                        <img
+                          src={rating.image_url}
+                          alt="Student meal photo"
+                          className="rounded-lg max-w-xs object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(rating.image_url, "_blank")}
+                        />
+                      )}
+                      <span className="text-xs text-muted-foreground block">
                         {format(new Date(rating.created_at), "MMM dd, yyyy 'at' h:mm a")}
                       </span>
                     </div>
