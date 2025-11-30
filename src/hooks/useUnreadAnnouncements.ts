@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export const useUnreadAnnouncements = () => {
   const { user } = useAuth();
@@ -55,6 +57,40 @@ export const useUnreadAnnouncements = () => {
       queryClient.invalidateQueries({ queryKey: ["unread-announcements"] });
     },
   });
+
+  // Subscribe to real-time announcement changes
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel("announcements-channel")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "announcements",
+        },
+        (payload) => {
+          console.log("New announcement received:", payload);
+          
+          // Show toast notification
+          toast.info("New Announcement", {
+            description: payload.new.title,
+            duration: 5000,
+          });
+
+          // Invalidate queries to update unread count
+          queryClient.invalidateQueries({ queryKey: ["unread-announcements"] });
+          queryClient.invalidateQueries({ queryKey: ["student-announcements"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   return {
     unreadCount,
