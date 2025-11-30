@@ -195,6 +195,42 @@ export type Database = {
         }
         Relationships: []
       }
+      student_announcement_dismissals: {
+        Row: {
+          announcement_id: string
+          dismissed_at: string | null
+          id: string
+          student_id: string
+        }
+        Insert: {
+          announcement_id: string
+          dismissed_at?: string | null
+          id?: string
+          student_id: string
+        }
+        Update: {
+          announcement_id?: string
+          dismissed_at?: string | null
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_announcement_dismissals_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_announcement_dismissals_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           allergies: string | null
