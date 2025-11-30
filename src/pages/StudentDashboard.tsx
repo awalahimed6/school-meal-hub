@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Home, UtensilsCrossed, History, User } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AnnouncementBell } from "@/components/student/AnnouncementBell";
 import { StudentHome } from "@/components/student/StudentHome";
 import { StudentMenuView } from "@/components/student/StudentMenuView";
 import { StudentHistoryView } from "@/components/student/StudentHistoryView";
@@ -46,6 +47,7 @@ const StudentDashboard = () => {
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
+              <AnnouncementBell />
               <Button variant="ghost" size="icon" onClick={handleSignOut} className="rounded-full">
                 <LogOut className="h-5 w-5" />
               </Button>
