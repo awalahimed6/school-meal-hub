@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Star } from "lucide-react";
+import { Star, Camera, X, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -23,6 +23,10 @@ const MealRatingSection = ({
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const mealLabels = {
     breakfast: "Breakfast",
@@ -66,9 +70,53 @@ const MealRatingSection = ({
     enabled: !!studentId,
   });
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be less than 5MB");
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const submitRating = useMutation({
     mutationFn: async () => {
-      if (!studentId || rating === 0) return;
+      if (!studentId || rating === 0 || !user) return;
+
+      let imageUrl = null;
+
+      // Upload image if provided
+      if (imageFile) {
+        const fileExt = imageFile.name.split(".").pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from("meal-photos")
+          .upload(fileName, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("meal-photos")
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrl;
+      }
 
       const { error } = await supabase.from("meal_ratings").insert({
         student_id: studentId,
@@ -76,6 +124,7 @@ const MealRatingSection = ({
         meal_type: mealType,
         rating,
         comment: comment.trim() || null,
+        image_url: imageUrl,
       });
 
       if (error) throw error;
@@ -85,6 +134,7 @@ const MealRatingSection = ({
       queryClient.invalidateQueries({ queryKey: ["meal-rating"] });
       setRating(0);
       setComment("");
+      removeImage();
     },
     onError: () => {
       toast.error("Failed to submit rating");
@@ -119,6 +169,13 @@ const MealRatingSection = ({
           <p className="text-sm text-muted-foreground italic">
             "{existingRating.comment}"
           </p>
+        )}
+        {existingRating.image_url && (
+          <img
+            src={existingRating.image_url}
+            alt="Meal photo"
+            className="rounded-lg w-full max-w-xs object-cover"
+          />
         )}
         <p className="text-xs text-muted-foreground">
           You rated this meal. Thank you!
@@ -163,6 +220,65 @@ const MealRatingSection = ({
           className="resize-none"
           rows={3}
         />
+      </div>
+
+      {/* Image Upload Section */}
+      <div className="space-y-2">
+        <p className="text-sm font-medium">Add a photo (optional)</p>
+        
+        {imagePreview ? (
+          <div className="relative">
+            <img
+              src={imagePreview}
+              alt="Meal preview"
+              className="rounded-lg w-full max-w-xs object-cover"
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2"
+              onClick={removeImage}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageSelect}
+              className="hidden"
+              id={`file-${mealType}`}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1"
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              Take Photo
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (fileInputRef.current) {
+                  fileInputRef.current.removeAttribute("capture");
+                  fileInputRef.current.click();
+                }
+              }}
+              className="flex-1"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload
+            </Button>
+          </div>
+        )}
       </div>
 
       <Button
