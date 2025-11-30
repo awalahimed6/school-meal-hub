@@ -41,7 +41,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Filter, Upload, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Filter, Upload, X, RefreshCw } from "lucide-react";
 import { z } from "zod";
 import { CameraCapture } from "./CameraCapture";
 
@@ -65,6 +65,7 @@ export const StudentManagement = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [cleaningUp, setCleaningUp] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: students, isLoading } = useQuery({
@@ -318,6 +319,38 @@ export const StudentManagement = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleCleanupOrphanedUsers = async () => {
+    setCleaningUp(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cleanup-orphaned-users`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to cleanup orphaned users");
+      }
+
+      const result = await response.json();
+      toast.success(`Cleaned up ${result.deleted_count} orphaned accounts`);
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to cleanup orphaned users");
+    } finally {
+      setCleaningUp(false);
+    }
+  };
+
   const filteredStudents = students?.filter((student) => {
     const matchesSearch =
       student.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -332,19 +365,20 @@ export const StudentManagement = () => {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Dialog open={isOpen} onOpenChange={(open) => {
-          if (!open) {
-            handleClose();
-          } else {
-            setIsOpen(true);
-          }
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Student
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={isOpen} onOpenChange={(open) => {
+            if (!open) {
+              handleClose();
+            } else {
+              setIsOpen(true);
+            }
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Student
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingStudent ? "Edit Student" : "Add New Student"}</DialogTitle>
@@ -482,6 +516,15 @@ export const StudentManagement = () => {
             </form>
           </DialogContent>
         </Dialog>
+        <Button 
+          variant="outline" 
+          onClick={handleCleanupOrphanedUsers}
+          disabled={cleaningUp}
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 ${cleaningUp ? 'animate-spin' : ''}`} />
+          {cleaningUp ? 'Cleaning...' : 'Cleanup Orphaned Accounts'}
+        </Button>
+        </div>
 
         <div className="flex flex-1 gap-2">
           <div className="relative flex-1">
