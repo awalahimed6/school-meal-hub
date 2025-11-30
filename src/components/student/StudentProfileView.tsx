@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { User, GraduationCap, Hash, Users } from "lucide-react";
+import { StudentSettings } from "./StudentSettings";
 
 export const StudentProfileView = () => {
   const { user } = useAuth();
@@ -135,6 +136,8 @@ export const StudentProfileView = () => {
           )}
         </div>
       )}
+
+      <StudentSettings />
     </div>
   );
 };
