@@ -62,6 +62,25 @@ export const useUnreadAnnouncements = () => {
   useEffect(() => {
     if (!user?.id) return;
 
+    // Create notification sound
+    const playNotificationSound = () => {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    };
+
     const channel = supabase
       .channel("announcements-channel")
       .on(
@@ -74,10 +93,21 @@ export const useUnreadAnnouncements = () => {
         (payload) => {
           console.log("New announcement received:", payload);
           
-          // Show toast notification
+          // Play notification sound
+          try {
+            playNotificationSound();
+          } catch (error) {
+            console.log("Could not play notification sound:", error);
+          }
+          
+          // Show toast notification with dismiss action
           toast.info("New Announcement", {
             description: payload.new.title,
             duration: 5000,
+            action: {
+              label: "Dismiss",
+              onClick: () => {},
+            },
           });
 
           // Invalidate queries to update unread count
