@@ -120,12 +120,8 @@ const Index = () => {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
   }
 
-  // Redirect based on role
-  if (user && role) {
-    if (role === "admin") return <Navigate to="/admin" replace />;
-    if (role === "staff") return <Navigate to="/staff" replace />;
-    if (role === "student") return <Navigate to="/student" replace />;
-  }
+  // Check if user is logged in (for conditional UI, not for redirect)
+  const isLoggedIn = !!user;
 
   const mealSchedule = [
     { meal: "Breakfast", time: "7:00 AM - 8:30 AM" },
@@ -147,9 +143,19 @@ const Index = () => {
               <p className="text-sm text-muted-foreground">Nutrition & Management</p>
             </div>
           </div>
-          <Button asChild>
-            <a href="/auth">Login</a>
-          </Button>
+          {isLoggedIn ? (
+            <Button onClick={() => {
+              if (role === "admin") navigate("/admin");
+              else if (role === "staff") navigate("/staff");
+              else if (role === "student") navigate("/student");
+            }}>
+              Go to Dashboard
+            </Button>
+          ) : (
+            <Button asChild>
+              <a href="/auth">Login</a>
+            </Button>
+          )}
         </div>
       </header>
 
@@ -163,9 +169,19 @@ const Index = () => {
           Ensuring every student gets the nutrition they need.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          <Button size="lg" asChild>
-            <a href="/auth">Get Started</a>
-          </Button>
+          {isLoggedIn ? (
+            <Button size="lg" onClick={() => {
+              if (role === "admin") navigate("/admin");
+              else if (role === "staff") navigate("/staff");
+              else if (role === "student") navigate("/student");
+            }}>
+              Go to Dashboard
+            </Button>
+          ) : (
+            <Button size="lg" asChild>
+              <a href="/auth">Get Started</a>
+            </Button>
+          )}
           <Button size="lg" variant="outline" asChild>
             <a href="#schedule">View Schedule</a>
           </Button>
