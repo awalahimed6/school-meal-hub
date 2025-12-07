@@ -21,7 +21,8 @@ const StudentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("home");
-  const { unreadCount: unreadVoiceCount, markAsRead: markVoiceAsRead } = useUnreadVoice();
+  const isViewingVoice = activeTab === "voice";
+  const { unreadCount: unreadVoiceCount, markAsRead: markVoiceAsRead } = useUnreadVoice(isViewingVoice);
 
   // Mark voice as read when Voice tab is clicked
   const handleTabClick = (tabId: TabType) => {
