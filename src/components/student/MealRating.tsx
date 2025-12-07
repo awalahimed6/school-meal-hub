@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Star, Camera, X, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -25,6 +27,7 @@ const MealRatingSection = ({
   const [comment, setComment] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
 
@@ -125,6 +128,7 @@ const MealRatingSection = ({
         rating,
         comment: comment.trim() || null,
         image_url: imageUrl,
+        is_public: isPublic,
       });
 
       if (error) throw error;
@@ -134,6 +138,7 @@ const MealRatingSection = ({
       queryClient.invalidateQueries({ queryKey: ["meal-rating"] });
       setRating(0);
       setComment("");
+      setIsPublic(false);
       removeImage();
     },
     onError: () => {
@@ -279,6 +284,23 @@ const MealRatingSection = ({
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Public Toggle */}
+      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+        <div className="space-y-0.5">
+          <Label htmlFor={`public-${mealType}`} className="text-sm font-medium">
+            Post to Student Voice Wall
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Publicly share this feedback to help improve the cafeteria
+          </p>
+        </div>
+        <Switch
+          id={`public-${mealType}`}
+          checked={isPublic}
+          onCheckedChange={setIsPublic}
+        />
       </div>
 
       <Button

@@ -1,14 +1,16 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Utensils, Calendar, Bell, Users } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Utensils, Calendar, Bell, Users, Heart, Star, MessageSquare } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-
+import { toast } from "sonner";
 const Index = () => {
   const { user, role, loading } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Fetch announcements
   const { data: announcements } = useQuery({
@@ -24,6 +26,95 @@ const Index = () => {
       return data;
     },
   });
+
+  // Fetch public ratings for Student Voice
+  const { data: publicRatings } = useQuery({
+    queryKey: ["public-ratings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("meal_ratings")
+        .select(`
+          id,
+          rating,
+          comment,
+          meal_type,
+          meal_date,
+          image_url,
+          created_at,
+          student_id
+        `)
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch likes for all public ratings
+  const { data: allLikes } = useQuery({
+    queryKey: ["all-likes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("feedback_likes")
+        .select("rating_id, user_id");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Toggle like mutation
+  const toggleLike = useMutation({
+    mutationFn: async (ratingId: string) => {
+      if (!user) {
+        navigate("/auth");
+        throw new Error("Please login to like feedback");
+      }
+
+      const { data, error } = await supabase.rpc("toggle_like", {
+        _rating_id: ratingId,
+        _user_id: user.id,
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-likes"] });
+    },
+    onError: (error) => {
+      if (error.message !== "Please login to like feedback") {
+        toast.error("Failed to update like");
+      }
+    },
+  });
+
+  // Helper functions for likes
+  const getLikeCount = (ratingId: string) => {
+    return allLikes?.filter((like) => like.rating_id === ratingId).length || 0;
+  };
+
+  const hasUserLiked = (ratingId: string) => {
+    return allLikes?.some(
+      (like) => like.rating_id === ratingId && like.user_id === user?.id
+    ) || false;
+  };
+
+  const handleLikeClick = (ratingId: string) => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    toggleLike.mutate(ratingId);
+  };
+
+  const mealLabels: Record<string, string> = {
+    breakfast: "Breakfast",
+    lunch: "Lunch",
+    dinner: "Dinner",
+  };
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
@@ -159,6 +250,88 @@ const Index = () => {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{format(new Date(announcement.created_at), "MMM d, yyyy")}</span>
                   </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* Student Voice Section */}
+      {publicRatings && publicRatings.length > 0 && (
+        <section className="container mx-auto px-4 py-12">
+          <Card>
+            <CardHeader className="text-center">
+              <MessageSquare className="mx-auto mb-2 h-12 w-12 text-primary" />
+              <CardTitle className="text-2xl">Student Voice</CardTitle>
+              <CardDescription>
+                See what students are saying about their meals
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {publicRatings.map((rating) => (
+                  <div
+                    key={rating.id}
+                    className="rounded-lg border p-4 space-y-3 hover:shadow-md transition-shadow"
+                  >
+                    {/* Rating Stars */}
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-4 w-4 ${
+                            star <= rating.rating
+                              ? "fill-warning text-warning"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Comment */}
+                    {rating.comment && (
+                      <p className="text-sm text-foreground line-clamp-3">
+                        "{rating.comment}"
+                      </p>
+                    )}
+
+                    {/* Image if present */}
+                    {rating.image_url && (
+                      <img
+                        src={rating.image_url}
+                        alt="Meal photo"
+                        className="rounded-lg w-full h-32 object-cover"
+                      />
+                    )}
+
+                    {/* Meal Type & Date */}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="capitalize font-medium">
+                        {mealLabels[rating.meal_type] || rating.meal_type}
+                      </span>
+                      <span>
+                        {format(new Date(rating.meal_date), "MMM d, yyyy")}
+                      </span>
+                    </div>
+
+                    {/* Like Button */}
+                    <button
+                      onClick={() => handleLikeClick(rating.id)}
+                      className="flex items-center gap-2 text-sm group"
+                    >
+                      <Heart
+                        className={`h-5 w-5 transition-colors ${
+                          hasUserLiked(rating.id)
+                            ? "fill-destructive text-destructive"
+                            : "text-muted-foreground group-hover:text-destructive"
+                        }`}
+                      />
+                      <span className="text-muted-foreground">
+                        {getLikeCount(rating.id)}
+                      </span>
+                    </button>
                   </div>
                 ))}
               </div>

@@ -41,12 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_likes: {
+        Row: {
+          created_at: string
+          id: string
+          rating_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_likes_rating_id_fkey"
+            columns: ["rating_id"]
+            isOneToOne: false
+            referencedRelation: "meal_ratings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meal_ratings: {
         Row: {
           comment: string | null
           created_at: string
           id: string
           image_url: string | null
+          is_public: boolean
           meal_date: string
           meal_type: Database["public"]["Enums"]["meal_type"]
           rating: number
@@ -57,6 +87,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_public?: boolean
           meal_date: string
           meal_type: Database["public"]["Enums"]["meal_type"]
           rating: number
@@ -67,6 +98,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_public?: boolean
           meal_date?: string
           meal_type?: Database["public"]["Enums"]["meal_type"]
           rating?: number
@@ -373,6 +405,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      toggle_like: {
+        Args: { _rating_id: string; _user_id: string }
         Returns: boolean
       }
     }
