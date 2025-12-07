@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
-export const useUnreadVoice = () => {
+export const useUnreadVoice = (isViewingVoice: boolean = false) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -115,28 +115,41 @@ export const useUnreadVoice = () => {
           schema: "public",
           table: "meal_ratings",
         },
-        (payload) => {
+        async (payload) => {
           // Only notify for public feedback
           if (payload.new.is_public) {
             console.log("New public voice feedback received:", payload);
 
-            // Play notification sound
-            playNotificationSound();
+            // If user is currently viewing the Voice tab, auto-mark as read
+            if (isViewingVoice && user?.id) {
+              const { data: student } = await supabase
+                .from("students")
+                .select("id")
+                .eq("user_id", user.id)
+                .maybeSingle();
+              
+              if (student?.id) {
+                await supabase
+                  .from("students")
+                  .update({ last_checked_voice: new Date().toISOString() })
+                  .eq("id", student.id);
+              }
+            } else {
+              // Play notification sound only if not viewing
+              playNotificationSound();
 
-            // Show toast notification
-            toast.info("New Student Voice", {
-              description: payload.new.comment 
-                ? payload.new.comment.substring(0, 50) + (payload.new.comment.length > 50 ? "..." : "")
-                : "A student shared feedback about a meal",
-              duration: 5000,
-              action: {
-                label: "View",
-                onClick: () => {},
-              },
-            });
+              // Show toast notification
+              toast.info("New Student Voice", {
+                description: payload.new.comment 
+                  ? payload.new.comment.substring(0, 50) + (payload.new.comment.length > 50 ? "..." : "")
+                  : "A student shared feedback about a meal",
+                duration: 5000,
+              });
+            }
 
             // Invalidate queries to update unread count and feed
             queryClient.invalidateQueries({ queryKey: ["unread-voice"] });
+            queryClient.invalidateQueries({ queryKey: ["student-voice-check"] });
             queryClient.invalidateQueries({ queryKey: ["public-ratings"] });
           }
         }
@@ -146,7 +159,7 @@ export const useUnreadVoice = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, queryClient]);
+  }, [user?.id, queryClient, isViewingVoice]);
 
   return { unreadCount, markAsRead };
 };
