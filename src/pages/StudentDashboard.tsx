@@ -5,15 +5,16 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Home, UtensilsCrossed, History, User } from "lucide-react";
+import { LogOut, Home, UtensilsCrossed, History, User, Megaphone } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnnouncementBell } from "@/components/student/AnnouncementBell";
 import { StudentHome } from "@/components/student/StudentHome";
 import { StudentMenuView } from "@/components/student/StudentMenuView";
 import { StudentHistoryView } from "@/components/student/StudentHistoryView";
 import { StudentProfileView } from "@/components/student/StudentProfileView";
+import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
 
-type TabType = "home" | "menu" | "history" | "profile";
+type TabType = "home" | "menu" | "history" | "voice" | "profile";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ const StudentDashboard = () => {
     { id: "home" as TabType, icon: Home, label: "Home" },
     { id: "menu" as TabType, icon: UtensilsCrossed, label: "Menu" },
     { id: "history" as TabType, icon: History, label: "History" },
+    { id: "voice" as TabType, icon: Megaphone, label: "Voice" },
     { id: "profile" as TabType, icon: User, label: "Profile" },
   ];
 
@@ -60,6 +62,13 @@ const StudentDashboard = () => {
           {activeTab === "home" && <StudentHome />}
           {activeTab === "menu" && <StudentMenuView />}
           {activeTab === "history" && <StudentHistoryView />}
+          {activeTab === "voice" && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold">Community Voice</h2>
+              <p className="text-muted-foreground text-sm">See what other students are saying about meals and show your support!</p>
+              <StudentVoiceFeed showHeader={false} limit={12} />
+            </div>
+          )}
           {activeTab === "profile" && <StudentProfileView />}
         </main>
 
