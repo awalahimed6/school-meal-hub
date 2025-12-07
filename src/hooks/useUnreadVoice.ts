@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export const useUnreadVoice = () => {
   const { user } = useAuth();
@@ -59,6 +61,75 @@ export const useUnreadVoice = () => {
       queryClient.invalidateQueries({ queryKey: ["student-voice-check"] });
     },
   });
+
+  // Subscribe to real-time public voice feedback
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Create notification sound
+    const playNotificationSound = () => {
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 600;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.4);
+      } catch (error) {
+        console.log("Could not play notification sound:", error);
+      }
+    };
+
+    const channel = supabase
+      .channel("voice-feedback-channel")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "meal_ratings",
+        },
+        (payload) => {
+          // Only notify for public feedback
+          if (payload.new.is_public) {
+            console.log("New public voice feedback received:", payload);
+
+            // Play notification sound
+            playNotificationSound();
+
+            // Show toast notification
+            toast.info("New Student Voice", {
+              description: payload.new.comment 
+                ? payload.new.comment.substring(0, 50) + (payload.new.comment.length > 50 ? "..." : "")
+                : "A student shared feedback about a meal",
+              duration: 5000,
+              action: {
+                label: "View",
+                onClick: () => {},
+              },
+            });
+
+            // Invalidate queries to update unread count and feed
+            queryClient.invalidateQueries({ queryKey: ["unread-voice"] });
+            queryClient.invalidateQueries({ queryKey: ["public-ratings"] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   return { unreadCount, markAsRead };
 };
