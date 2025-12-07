@@ -23,12 +23,13 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
   const { unreadCount: unreadVoiceCount, markAsRead: markVoiceAsRead } = useUnreadVoice();
 
-  // Mark voice as read when Voice tab is active
-  useEffect(() => {
-    if (activeTab === "voice" && unreadVoiceCount > 0) {
+  // Mark voice as read when Voice tab is clicked
+  const handleTabClick = (tabId: TabType) => {
+    setActiveTab(tabId);
+    if (tabId === "voice") {
       markVoiceAsRead();
     }
-  }, [activeTab, unreadVoiceCount, markVoiceAsRead]);
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -96,7 +97,7 @@ const StudentDashboard = () => {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setActiveTab(item.id)}
+                    onClick={() => handleTabClick(item.id)}
                     className={`flex flex-col items-center gap-1 transition-all duration-200 ${
                       isActive
                         ? "text-white scale-110"
