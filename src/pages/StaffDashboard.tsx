@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Search, Utensils, Bell } from "lucide-react";
+import { LogOut, Search, Utensils, Bell, Home } from "lucide-react";
 import { StudentSearch } from "@/components/staff/StudentSearch";
 import { AnnouncementManager } from "@/components/staff/AnnouncementManager";
 import { QRScanner } from "@/components/staff/QRScanner";
@@ -32,10 +32,15 @@ const StaffDashboard = () => {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Staff Dashboard</h1>
               <p className="text-sm text-muted-foreground mt-1">{user?.email}</p>
             </div>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => navigate("/")} title="Back to Home">
+                <Home className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </header>
 
