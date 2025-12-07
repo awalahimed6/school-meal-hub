@@ -48,6 +48,9 @@ const StudentDashboard = () => {
               <p className="text-xs text-muted-foreground mt-0.5">{user?.email}</p>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="rounded-full" title="Back to Home">
+                <Home className="h-5 w-5" />
+              </Button>
               <ThemeToggle />
               <AnnouncementBell />
               <Button variant="ghost" size="icon" onClick={handleSignOut} className="rounded-full">
