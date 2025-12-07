@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { StudentMenuView } from "@/components/student/StudentMenuView";
 import { StudentHistoryView } from "@/components/student/StudentHistoryView";
 import { StudentProfileView } from "@/components/student/StudentProfileView";
 import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
+import { useUnreadVoice } from "@/hooks/useUnreadVoice";
 
 type TabType = "home" | "menu" | "history" | "voice" | "profile";
 
@@ -20,6 +21,14 @@ const StudentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("home");
+  const { unreadCount: unreadVoiceCount, markAsRead: markVoiceAsRead } = useUnreadVoice();
+
+  // Mark voice as read when Voice tab is active
+  useEffect(() => {
+    if (activeTab === "voice" && unreadVoiceCount > 0) {
+      markVoiceAsRead();
+    }
+  }, [activeTab, unreadVoiceCount, markVoiceAsRead]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -82,6 +91,7 @@ const StudentDashboard = () => {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
+                const showBadge = item.id === "voice" && unreadVoiceCount > 0;
                 
                 return (
                   <button
@@ -94,13 +104,18 @@ const StudentDashboard = () => {
                     }`}
                   >
                     <div
-                      className={`p-3 rounded-2xl transition-all duration-200 ${
+                      className={`relative p-3 rounded-2xl transition-all duration-200 ${
                         isActive
                           ? "bg-primary"
                           : "bg-transparent"
                       }`}
                     >
                       <Icon className="h-5 w-5" />
+                      {showBadge && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {unreadVoiceCount > 9 ? "9+" : unreadVoiceCount}
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs font-medium">{item.label}</span>
                   </button>
