@@ -275,6 +275,7 @@ export type Database = {
           grade: string
           id: string
           last_checked_announcements: string | null
+          last_checked_voice: string | null
           profile_image: string | null
           sex: string
           status: Database["public"]["Enums"]["student_status"]
@@ -290,6 +291,7 @@ export type Database = {
           grade: string
           id?: string
           last_checked_announcements?: string | null
+          last_checked_voice?: string | null
           profile_image?: string | null
           sex: string
           status?: Database["public"]["Enums"]["student_status"]
@@ -305,6 +307,7 @@ export type Database = {
           grade?: string
           id?: string
           last_checked_announcements?: string | null
+          last_checked_voice?: string | null
           profile_image?: string | null
           sex?: string
           status?: Database["public"]["Enums"]["student_status"]
