@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,12 +14,71 @@ serve(async (req) => {
   try {
     console.log("Received webhook request from Resend");
 
-    const event = await req.json();
+    // Get the webhook signing secret
+    const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET");
+    if (!webhookSecret) {
+      console.error("RESEND_WEBHOOK_SECRET is not configured");
+      return new Response(
+        JSON.stringify({ error: "Webhook secret not configured" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Get the raw body for signature verification
+    const payload = await req.text();
+    
+    // Extract svix headers for signature verification
+    const svixId = req.headers.get("svix-id");
+    const svixTimestamp = req.headers.get("svix-timestamp");
+    const svixSignature = req.headers.get("svix-signature");
+
+    // Validate that all required headers are present
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      console.error("Missing webhook signature headers");
+      return new Response(
+        JSON.stringify({ error: "Missing webhook signature headers" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Verify the webhook signature
+    const wh = new Webhook(webhookSecret);
+    let event: { type: string; data: Record<string, unknown> };
+    
+    try {
+      event = wh.verify(payload, {
+        "svix-id": svixId,
+        "svix-timestamp": svixTimestamp,
+        "svix-signature": svixSignature,
+      }) as { type: string; data: Record<string, unknown> };
+    } catch (verifyError) {
+      console.error("Webhook signature verification failed:", verifyError);
+      return new Response(
+        JSON.stringify({ error: "Invalid webhook signature" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log("Webhook signature verified successfully");
     console.log("Event type:", event.type);
 
     // Process email.received events
     if (event.type === "email.received") {
-      const emailData = event.data;
+      const emailData = event.data as {
+        from: string;
+        to: string[];
+        subject: string;
+        email_id: string;
+      };
       
       console.log("Received email:", {
         from: emailData.from,
