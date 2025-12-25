@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
 import { PhotoGallery } from "@/components/landing/PhotoGallery";
+import { DeveloperPortfolio } from "@/components/landing/DeveloperPortfolio";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -509,12 +510,25 @@ const Index = () => {
             <p className="text-sm text-background/50">
               © {new Date().getFullYear()} Nedjo Ifa Boru Boarding Secondary School. All rights reserved.
             </p>
-            <p className="text-sm text-background/50">
-              "Ifa Boru" - Ray of Light ☀️
-            </p>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://v0-futuristic-portfolio-website-pied.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-background/50 hover:text-primary transition-colors"
+              >
+                Developed by Awalex
+              </a>
+              <p className="text-sm text-background/50">
+                "Ifa Boru" - Ray of Light ☀️
+              </p>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Developer Portfolio FAB */}
+      <DeveloperPortfolio />
     </div>
   );
 };
