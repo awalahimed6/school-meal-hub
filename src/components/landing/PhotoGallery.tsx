@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { X, ChevronLeft, ChevronRight, Play, Camera, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -6,73 +8,95 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface GalleryImage {
   id: string;
-  src: string;
-  alt: string;
+  title: string;
+  description: string | null;
   category: string;
+  image_url: string;
+}
+
+interface MealVideo {
+  id: string;
+  title: string;
+  description: string | null;
+  video_url: string | null;
+  thumbnail_url: string | null;
 }
 
 interface PhotoGalleryProps {
   className?: string;
 }
 
-const galleryImages: GalleryImage[] = [
+const defaultImages: GalleryImage[] = [
   {
-    id: "1",
-    src: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&q=80",
-    alt: "Modern classroom with students learning",
+    id: "default-1",
+    title: "Modern classroom with students learning",
+    description: null,
     category: "Classrooms",
+    image_url: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&q=80",
   },
   {
-    id: "2",
-    src: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
-    alt: "Student dormitory building exterior",
+    id: "default-2",
+    title: "Student dormitory building",
+    description: null,
     category: "Dormitories",
+    image_url: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
   },
   {
-    id: "3",
-    src: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=800&q=80",
-    alt: "Students studying in library",
+    id: "default-3",
+    title: "Students studying in library",
+    description: null,
     category: "Campus Life",
+    image_url: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=800&q=80",
   },
   {
-    id: "4",
-    src: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&q=80",
-    alt: "Students participating in sports activities",
+    id: "default-4",
+    title: "Sports activities",
+    description: null,
     category: "Activities",
-  },
-  {
-    id: "5",
-    src: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=80",
-    alt: "Teacher explaining lesson to students",
-    category: "Classrooms",
-  },
-  {
-    id: "6",
-    src: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80",
-    alt: "Graduation ceremony celebration",
-    category: "Activities",
-  },
-  {
-    id: "7",
-    src: "https://images.unsplash.com/photo-1588072432836-e10032774350?w=800&q=80",
-    alt: "Students in science laboratory",
-    category: "Classrooms",
-  },
-  {
-    id: "8",
-    src: "https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=800&q=80",
-    alt: "School campus green area",
-    category: "Campus Life",
+    image_url: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&q=80",
   },
 ];
-
-const categories = ["All", "Classrooms", "Dormitories", "Campus Life", "Activities"];
 
 export function PhotoGallery({ className }: PhotoGalleryProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [videoOpen, setVideoOpen] = useState(false);
+
+  // Fetch gallery images from database
+  const { data: dbImages = [] } = useQuery({
+    queryKey: ["gallery-images"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gallery_images")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+      return data as GalleryImage[];
+    },
+  });
+
+  // Fetch meal video
+  const { data: mealVideo } = useQuery({
+    queryKey: ["meal-video"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("meal_system_video")
+        .select("*")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as MealVideo | null;
+    },
+  });
+
+  // Use database images if available, otherwise show defaults
+  const galleryImages = dbImages.length > 0 ? dbImages : defaultImages;
+
+  // Get unique categories from images
+  const categories = ["All", ...Array.from(new Set(galleryImages.map((img) => img.category)))];
 
   const filteredImages =
     selectedCategory === "All"
@@ -142,8 +166,8 @@ export function PhotoGallery({ className }: PhotoGalleryProps) {
               onClick={() => openLightbox(index)}
             >
               <img
-                src={image.src}
-                alt={image.alt}
+                src={image.image_url}
+                alt={image.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
               />
@@ -152,7 +176,7 @@ export function PhotoGallery({ className }: PhotoGalleryProps) {
                 <span className="inline-block px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full mb-1">
                   {image.category}
                 </span>
-                <p className="text-white text-sm line-clamp-1">{image.alt}</p>
+                <p className="text-white text-sm line-clamp-1">{image.title}</p>
               </div>
               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -180,7 +204,7 @@ export function PhotoGallery({ className }: PhotoGalleryProps) {
           >
             {/* Video Thumbnail */}
             <img
-              src="https://images.unsplash.com/photo-1567521464027-f127ff144326?w=1200&q=80"
+              src={mealVideo?.thumbnail_url || "https://images.unsplash.com/photo-1567521464027-f127ff144326?w=1200&q=80"}
               alt="Meal system demonstration"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
@@ -195,8 +219,12 @@ export function PhotoGallery({ className }: PhotoGalleryProps) {
 
             {/* Video Info */}
             <div className="absolute bottom-6 left-6 right-6">
-              <p className="text-white font-semibold text-lg mb-1">Ifa Boru Meal Management System</p>
-              <p className="text-white/80 text-sm">QR Code Scanning • Real-time Tracking • Nutritious Meals</p>
+              <p className="text-white font-semibold text-lg mb-1">
+                {mealVideo?.title || "Ifa Boru Meal Management System"}
+              </p>
+              <p className="text-white/80 text-sm">
+                {mealVideo?.description || "QR Code Scanning • Real-time Tracking • Nutritious Meals"}
+              </p>
             </div>
           </div>
         </div>
@@ -241,8 +269,8 @@ export function PhotoGallery({ className }: PhotoGalleryProps) {
             <div className="w-full h-full p-8 flex items-center justify-center">
               {filteredImages[currentImageIndex] && (
                 <img
-                  src={filteredImages[currentImageIndex].src}
-                  alt={filteredImages[currentImageIndex].alt}
+                  src={filteredImages[currentImageIndex].image_url}
+                  alt={filteredImages[currentImageIndex].title}
                   className="max-w-full max-h-full object-contain rounded-lg"
                 />
               )}
@@ -251,7 +279,7 @@ export function PhotoGallery({ className }: PhotoGalleryProps) {
             {/* Image Info */}
             <div className="absolute bottom-4 left-4 right-4 text-center">
               <p className="text-white font-medium">
-                {filteredImages[currentImageIndex]?.alt}
+                {filteredImages[currentImageIndex]?.title}
               </p>
               <p className="text-white/60 text-sm mt-1">
                 {currentImageIndex + 1} / {filteredImages.length}
@@ -275,32 +303,42 @@ export function PhotoGallery({ className }: PhotoGalleryProps) {
               <X className="h-6 w-6" />
             </Button>
 
-            {/* Video Placeholder - Replace with actual video */}
-            <div className="w-full h-full bg-muted flex flex-col items-center justify-center rounded-lg">
-              <div className="text-center p-8">
-                <div className="h-20 w-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
-                  <Play className="h-10 w-10 text-primary" />
-                </div>
-                <h4 className="text-xl font-semibold text-foreground mb-2">
-                  Meal System Demo Video
-                </h4>
-                <p className="text-muted-foreground max-w-md">
-                  This video showcases our innovative QR-based meal tracking system, 
-                  demonstrating how students scan their IDs to receive nutritious meals.
-                </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
-                    QR Scanning
-                  </span>
-                  <span className="px-3 py-1 text-xs rounded-full bg-secondary/10 text-secondary border border-secondary/20">
-                    Real-time Tracking
-                  </span>
-                  <span className="px-3 py-1 text-xs rounded-full bg-accent/10 text-accent border border-accent/20">
-                    Meal Analytics
-                  </span>
+            {/* Video Player or Placeholder */}
+            {mealVideo?.video_url ? (
+              <video
+                src={mealVideo.video_url}
+                poster={mealVideo.thumbnail_url || undefined}
+                controls
+                autoPlay
+                className="w-full h-full rounded-lg"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted flex flex-col items-center justify-center rounded-lg">
+                <div className="text-center p-8">
+                  <div className="h-20 w-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
+                    <Play className="h-10 w-10 text-primary" />
+                  </div>
+                  <h4 className="text-xl font-semibold text-foreground mb-2">
+                    Meal System Demo Video
+                  </h4>
+                  <p className="text-muted-foreground max-w-md">
+                    This video showcases our innovative QR-based meal tracking system, 
+                    demonstrating how students scan their IDs to receive nutritious meals.
+                  </p>
+                  <div className="mt-6 flex flex-wrap justify-center gap-3">
+                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
+                      QR Scanning
+                    </span>
+                    <span className="px-3 py-1 text-xs rounded-full bg-secondary/10 text-secondary border border-secondary/20">
+                      Real-time Tracking
+                    </span>
+                    <span className="px-3 py-1 text-xs rounded-full bg-accent/10 text-accent border border-accent/20">
+                      Meal Analytics
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

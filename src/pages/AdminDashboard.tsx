@@ -7,12 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Users, UserCog, BarChart3, LogOut, UtensilsCrossed, Clock, Home, Settings, Key, User } from "lucide-react";
+import { Users, UserCog, BarChart3, LogOut, UtensilsCrossed, Clock, Home, Settings, Key, User, ImageIcon } from "lucide-react";
 import { StudentManagement } from "@/components/admin/StudentManagement";
 import { StaffManagement } from "@/components/admin/StaffManagement";
 import { MealReports } from "@/components/admin/MealReports";
 import { MenuManager } from "@/components/admin/MenuManager";
 import { MealScheduleManager } from "@/components/admin/MealScheduleManager";
+import { GalleryManager } from "@/components/admin/GalleryManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
@@ -173,8 +174,8 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
-          <Tabs defaultValue="students" className="space-y-6">
-            <TabsList className="grid w-full max-w-4xl grid-cols-5">
+        <Tabs defaultValue="students" className="space-y-6">
+            <TabsList className="grid w-full max-w-5xl grid-cols-6">
               <TabsTrigger value="students">
                 <Users className="mr-2 h-4 w-4" />
                 Students
@@ -194,6 +195,10 @@ const AdminDashboard = () => {
               <TabsTrigger value="schedules">
                 <Clock className="mr-2 h-4 w-4" />
                 Schedules
+              </TabsTrigger>
+              <TabsTrigger value="gallery">
+                <ImageIcon className="mr-2 h-4 w-4" />
+                Gallery
               </TabsTrigger>
             </TabsList>
 
@@ -263,6 +268,20 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <MealScheduleManager />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="gallery" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Campus Gallery & Video</CardTitle>
+                  <CardDescription>
+                    Upload campus photos and the meal system demo video for the landing page
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <GalleryManager />
                 </CardContent>
               </Card>
             </TabsContent>
