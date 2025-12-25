@@ -8,72 +8,96 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 97.5%;
-    --foreground: 222.2 84% 4.9%;
+    /* Ifa Boru - Ray of Light Theme */
+    --background: 30 30% 98%;
+    --foreground: 215 25% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 262 83% 58%;
+    --popover-foreground: 215 25% 15%;
+    
+    /* Primary: Vibrant Orange - Hope & Energy */
+    --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262 83% 58%;
-    --radius: 1.5rem;
+    
+    /* Secondary: Deep Blue - Trust & Excellence */
+    --secondary: 215 70% 40%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 30 20% 94%;
+    --muted-foreground: 215 15% 45%;
+    
+    /* Accent: Warm Gold - Achievement & Light */
+    --accent: 42 90% 55%;
+    --accent-foreground: 215 25% 15%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 24 95% 53%;
+    --radius: 1rem;
     --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 210 40% 98%;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success-foreground: 0 0% 100%;
+    --warning: 42 90% 55%;
+    --warning-foreground: 215 25% 15%;
+    
+    /* Sidebar */
+    --sidebar-background: 215 70% 40%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 60% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 215 50% 35%;
+    --sidebar-ring: 24 95% 53%;
+    
+    /* Custom gradient colors */
+    --gradient-start: 24 95% 53%;
+    --gradient-end: 42 90% 55%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 262 83% 58%;
+    --background: 215 30% 10%;
+    --foreground: 30 20% 95%;
+    --card: 215 25% 14%;
+    --card-foreground: 30 20% 95%;
+    --popover: 215 25% 14%;
+    --popover-foreground: 30 20% 95%;
+    
+    --primary: 24 95% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 262 83% 58%;
-    --success: 142 71% 35%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 40%;
-    --warning-foreground: 210 40% 98%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 240 5.9% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    --secondary: 215 60% 50%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 215 20% 20%;
+    --muted-foreground: 30 15% 65%;
+    
+    --accent: 42 85% 50%;
+    --accent-foreground: 215 25% 10%;
+    
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 20% 22%;
+    --input: 215 20% 22%;
+    --ring: 24 95% 55%;
+    --success: 142 60% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 42 85% 45%;
+    --warning-foreground: 215 25% 10%;
+    
+    --sidebar-background: 215 30% 12%;
+    --sidebar-foreground: 30 20% 95%;
+    --sidebar-primary: 24 95% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 25% 20%;
+    --sidebar-accent-foreground: 30 20% 95%;
+    --sidebar-border: 215 20% 18%;
+    --sidebar-ring: 24 95% 55%;
+    
+    --gradient-start: 24 95% 55%;
+    --gradient-end: 42 85% 50%;
   }
 }
 
