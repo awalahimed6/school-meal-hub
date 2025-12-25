@@ -23,6 +23,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
+import { PhotoGallery } from "@/components/landing/PhotoGallery";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +73,7 @@ const Index = () => {
   const navLinks = [
     { name: "Home", href: "#" },
     { name: "About Us", href: "#features" },
+    { name: "Gallery", href: "#gallery" },
     { name: "Schedule", href: "#schedule" },
     { name: "News", href: "#announcements" },
     { name: "Student Voice", href: "#student-voice" },
@@ -314,6 +316,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Photo Gallery Section */}
+      <PhotoGallery />
 
       {/* Meal Schedule Section */}
       <section id="schedule" className="py-24">
