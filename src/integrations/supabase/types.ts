@@ -109,6 +109,36 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_base: {
+        Row: {
+          answer: string
+          category: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meal_ratings: {
         Row: {
           comment: string | null
