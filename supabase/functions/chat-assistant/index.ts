@@ -65,16 +65,6 @@ serve(async (req) => {
       console.error("Error fetching menu templates:", templateError);
     }
 
-    // Fetch knowledge base FAQs
-    const { data: knowledgeBase, error: kbError } = await supabase
-      .from('knowledge_base')
-      .select('question, answer, category')
-      .eq('is_active', true);
-
-    if (kbError) {
-      console.error("Error fetching knowledge base:", kbError);
-    }
-
     // Build upcoming menus information
     let upcomingMenusInfo = "";
     if (upcomingMenus && upcomingMenus.length > 0) {
@@ -192,15 +182,6 @@ serve(async (req) => {
       scheduleInfo = `\n=== MEAL SERVING TIMES ===\nNo active schedules found.\n`;
     }
 
-    // Build knowledge base information
-    let knowledgeInfo = "";
-    if (knowledgeBase && knowledgeBase.length > 0) {
-      knowledgeInfo = "\n=== FREQUENTLY ASKED QUESTIONS ===\n";
-      for (const item of knowledgeBase) {
-        knowledgeInfo += `\nQ: ${item.question}\nA: ${item.answer}\n`;
-      }
-    }
-
     // Build the system prompt with real data
     const systemPrompt = `You are Campus Buddy, the official AI assistant for Ifa Boru Boarding School's meal management system.
 
@@ -215,7 +196,6 @@ ${todayMenuInfo}
 ${upcomingMenusInfo}
 ${templatesInfo}
 ${scheduleInfo}
-${knowledgeInfo}
 
 === YOUR RESPONSIBILITIES ===
 1. Answer questions about TODAY's meals using the exact data above
@@ -223,14 +203,12 @@ ${knowledgeInfo}
    - First check "UPCOMING SPECIFIC MENUS" for that date
    - If not found, use "WEEKLY STANDARD TEMPLATE" based on the day of week
 3. Provide accurate serving times from the schedule data
-4. Answer FAQs using the knowledge base data above
-5. Explain how the QR code check-in system works for meal attendance
-6. Help students navigate the meal system app
-7. Be friendly, helpful, and concise
+4. Explain how the QR code check-in system works for meal attendance
+5. Help students navigate the meal system app
+6. Be friendly, helpful, and concise
 
 === IMPORTANT RULES ===
 - NEVER guess or make up menu items - only use the data provided above
-- For FAQs, use the exact answers from the knowledge base when available
 - For future dates: Calculate the day of week to find the correct template
 - If asked about a date beyond 7 days, explain you only have access to the next week's data
 - If no menu is set, honestly tell the student and suggest they check with staff
