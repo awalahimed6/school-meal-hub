@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
 import { lazy, Suspense } from "react";
+import { GlobalCampusBuddy } from "@/components/GlobalCampusBuddy";
 
 // Eager load the index page for fast initial load
 import Index from "./pages/Index";
@@ -50,6 +51,8 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            {/* Global Campus Buddy Chatbot - appears on all pages */}
+            <GlobalCampusBuddy />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
