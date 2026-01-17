@@ -113,13 +113,23 @@ export const GlobalCampusBuddy = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 z-50 w-[350px] h-[500px] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        <Card className="fixed inset-0 z-50 w-full h-[100dvh] rounded-none sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[380px] sm:h-[600px] sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
           {/* Header */}
           <CardHeader className="bg-gradient-to-r from-primary to-orange-600 text-white p-4 flex-shrink-0">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Bot className="h-6 w-6" />
-              Campus Buddy
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Bot className="h-6 w-6" />
+                Campus Buddy
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
+                className="text-white hover:bg-white/20 sm:hidden"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
             <p className="text-xs text-white/80 mt-1">Your school assistant</p>
           </CardHeader>
 
@@ -159,8 +169,8 @@ export const GlobalCampusBuddy = () => {
             </ScrollArea>
           </CardContent>
 
-          {/* Input */}
-          <div className="p-4 border-t flex-shrink-0 bg-card">
+          {/* Input - with safe area padding for mobile */}
+          <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4 border-t flex-shrink-0 bg-card">
             <div className="flex gap-2">
               <Input
                 ref={inputRef}
