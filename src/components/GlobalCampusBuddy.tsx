@@ -17,7 +17,7 @@ export const GlobalCampusBuddy = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi! I'm Campus Buddy 🎓 How can I help you today with our meal system or school information?",
+      content: "Hi! I'm Nejo Campus Buddy 🎓 How can I help you today with our meal system or school information?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -121,7 +121,7 @@ export const GlobalCampusBuddy = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Bot className="h-6 w-6" />
-                Campus Buddy
+                Nejo Campus Buddy
               </CardTitle>
               <Button
                 variant="ghost"

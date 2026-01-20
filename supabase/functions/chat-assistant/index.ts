@@ -183,7 +183,7 @@ serve(async (req) => {
     }
 
     // Build the system prompt with real data
-    const systemPrompt = `You are Campus Buddy, the official AI assistant for Ifa Boru Boarding School's meal management system.
+    const systemPrompt = `You are Nejo Campus Buddy, the official AI assistant for Ifa Boru Boarding School's meal management system.
 
 You have access to REAL, LIVE data from the school's database. Always use this data to answer questions accurately.
 

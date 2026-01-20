@@ -44,7 +44,7 @@ serve(async (req) => {
       await sendTelegramMessage(
         TELEGRAM_BOT_TOKEN,
         chatId,
-        `👋 Hello ${userName}! I'm Boru, your School Meal Hub assistant.\n\nI can help you with:\n• Today's menu and meal times\n• Upcoming menus for the week\n• General cafeteria questions\n\nJust ask me anything!`
+        `👋 Hello ${userName}! I'm Nejo Campus Buddy, your school meal assistant 🎓\n\nI can help you with:\n• Today's menu and meal times\n• Upcoming menus for the week\n• School information & FAQs\n\nJust ask me anything!`
       );
       return new Response("OK", { status: 200 });
     }
@@ -158,7 +158,7 @@ serve(async (req) => {
     }
 
     // Build system prompt
-    const systemPrompt = `You are Boru, the friendly School Meal Hub assistant on Telegram. You help students with meal-related questions.
+    const systemPrompt = `You are Nejo Campus Buddy, the friendly school meal assistant on Telegram. You help students with meal-related questions.
 
 TODAY'S DATE: ${today} (${dayOfWeek})
 
