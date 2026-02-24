@@ -25,12 +25,23 @@ const ResetPassword = () => {
   useEffect(() => {
     // Listen for auth state changes to handle the token from email
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth event on reset page:", event);
       if (event === 'PASSWORD_RECOVERY') {
         setIsValidSession(true);
       } else if (event === 'SIGNED_IN' && session) {
         setIsValidSession(true);
       }
     });
+
+    // Check if URL has hash fragments (Supabase appends tokens as hash)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+    
+    if (type === 'recovery') {
+      // Supabase will auto-exchange the token, wait for the auth event
+      console.log("Recovery token detected in URL hash");
+      return () => subscription.unsubscribe();
+    }
 
     // Also check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -45,7 +56,7 @@ const ResetPassword = () => {
               navigate("/auth");
             }
           });
-        }, 1000);
+        }, 2000);
       }
     });
 
