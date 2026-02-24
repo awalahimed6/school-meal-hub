@@ -212,7 +212,7 @@ GUIDELINES:
       await sendTelegramMessage(
         TELEGRAM_BOT_TOKEN,
         chatId,
-        "🔧 Boru is offline right now. Please try again later!"
+        "🔧 Nejo Campus Buddy is offline right now. Please try again later!"
       );
       return new Response("OK", { status: 200 });
     }
@@ -237,7 +237,7 @@ GUIDELINES:
         await sendTelegramMessage(
           Deno.env.get("TELEGRAM_BOT_TOKEN")!,
           chatId,
-          "🔧 Boru is offline right now. Please try again later!"
+          "🔧 Nejo Campus Buddy is offline right now. Please try again later!"
         );
       }
     } catch {
