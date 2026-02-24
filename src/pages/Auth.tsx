@@ -90,8 +90,8 @@ const Auth = () => {
     try {
       resetSchema.parse({ email });
 
-      // Generate reset link
-      const resetLink = `${window.location.origin}/auth/reset-password`;
+      // Generate reset link - use Vercel production URL
+      const resetLink = `https://nibsbss-school-meal.vercel.app/reset-password`;
 
       // Request password reset from Supabase (this generates the token)
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
