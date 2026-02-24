@@ -90,13 +90,10 @@ const Auth = () => {
     try {
       resetSchema.parse({ email });
 
-      const resetLink = `https://nibsbss-school-meal.vercel.app/reset-password`;
+      const resetLink = "https://nibsbss-school-meal.vercel.app/reset-password";
 
-      const { error } = await supabase.functions.invoke("request-password-reset", {
-        body: {
-          email,
-          redirectUrl: resetLink,
-        },
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: resetLink,
       });
 
       if (error) throw error;
