@@ -35,12 +35,16 @@ const ResetPassword = () => {
 
     const initializeResetSession = async () => {
       const searchParams = new URLSearchParams(window.location.search);
-      const tokenFromQuery = searchParams.get("token") || searchParams.get("token_hash");
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
-      if (tokenFromQuery) {
+      const tokenHashFromQuery = searchParams.get("token_hash") || searchParams.get("token");
+      const authCode = searchParams.get("code");
+      const hasRecoveryHash = hashParams.get("type") === "recovery" || !!hashParams.get("access_token");
+
+      if (tokenHashFromQuery) {
         const { error } = await supabase.auth.verifyOtp({
           type: "recovery",
-          token_hash: tokenFromQuery,
+          token_hash: tokenHashFromQuery,
         });
 
         if (error) {
@@ -55,8 +59,22 @@ const ResetPassword = () => {
         return;
       }
 
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      if (hashParams.get("type") === "recovery") {
+      if (authCode) {
+        const { error } = await supabase.auth.exchangeCodeForSession(authCode);
+
+        if (error) {
+          toast.error("Invalid or expired reset link");
+          navigate("/login");
+          return;
+        }
+
+        if (!isMounted) return;
+        window.history.replaceState({}, document.title, "/reset-password");
+        setIsValidSession(true);
+        return;
+      }
+
+      if (hasRecoveryHash) {
         setIsValidSession(true);
         return;
       }
