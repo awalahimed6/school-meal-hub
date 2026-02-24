@@ -90,25 +90,26 @@ const Auth = () => {
     try {
       resetSchema.parse({ email });
 
-      // Generate reset link - use Vercel production URL
       const resetLink = `https://nibsbss-school-meal.vercel.app/reset-password`;
 
-      // Request password reset from Supabase (this generates the token)
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: resetLink,
+      const { error } = await supabase.functions.invoke("request-password-reset", {
+        body: {
+          email,
+          redirectUrl: resetLink,
+        },
       });
 
       if (error) throw error;
 
-      toast.success("Password reset link sent! Check your email.");
+      toast.success("If an account exists with this email, a reset link has been sent.");
       setIsResetDialogOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
-      } else if (error instanceof Error && error.message.includes("rate limit")) {
-        toast.error("Too many requests. Please wait a few minutes and try again.");
+      } else if (error instanceof Error && error.message.toLowerCase().includes("rate")) {
+        toast.error("Too many requests. Please wait a bit and try again.");
       } else {
-        toast.error("If an account exists with this email, you will receive a reset link.");
+        toast.error("Unable to send reset link right now. Please try again.");
       }
     } finally {
       setIsResetting(false);
