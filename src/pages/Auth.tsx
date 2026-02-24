@@ -85,15 +85,18 @@ const Auth = () => {
     setIsResetting(true);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get("reset-email") as string;
+    const email = (formData.get("reset-email") as string).trim();
 
     try {
       resetSchema.parse({ email });
 
       const resetLink = "https://nibsbss-school-meal.vercel.app/reset-password";
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: resetLink,
+      const { error } = await supabase.functions.invoke("request-password-reset", {
+        body: {
+          email,
+          redirectUrl: resetLink,
+        },
       });
 
       if (error) throw error;

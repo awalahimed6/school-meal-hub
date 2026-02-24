@@ -17,6 +17,8 @@ const resetPasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
+const RESET_PAGE_URL = "https://nibsbss-school-meal.vercel.app/reset-password";
+
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +42,15 @@ const ResetPassword = () => {
       const tokenHashFromQuery = searchParams.get("token_hash") || searchParams.get("token");
       const authCode = searchParams.get("code");
       const hasRecoveryHash = hashParams.get("type") === "recovery" || !!hashParams.get("access_token");
+      const hasRecoveryParams = !!tokenHashFromQuery || !!authCode || hasRecoveryHash;
+
+      if (hasRecoveryParams && window.location.href !== RESET_PAGE_URL && window.location.origin !== new URL(RESET_PAGE_URL).origin) {
+        const target = new URL(RESET_PAGE_URL);
+        target.search = window.location.search;
+        target.hash = window.location.hash;
+        window.location.replace(target.toString());
+        return;
+      }
 
       if (tokenHashFromQuery) {
         const { error } = await supabase.auth.verifyOtp({
