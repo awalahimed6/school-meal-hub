@@ -23,44 +23,59 @@ const ResetPassword = () => {
   const [isValidSession, setIsValidSession] = useState(false);
 
   useEffect(() => {
-    // Listen for auth state changes to handle the token from email
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth event on reset page:", event);
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsValidSession(true);
-      } else if (event === 'SIGNED_IN' && session) {
+    let isMounted = true;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
         setIsValidSession(true);
       }
     });
 
-    // Check if URL has hash fragments (Supabase appends tokens as hash)
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type');
-    
-    if (type === 'recovery') {
-      // Supabase will auto-exchange the token, wait for the auth event
-      console.log("Recovery token detected in URL hash");
-      return () => subscription.unsubscribe();
-    }
+    const initializeResetSession = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tokenFromQuery = searchParams.get("token") || searchParams.get("token_hash");
 
-    // Also check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (tokenFromQuery) {
+        const { error } = await supabase.auth.verifyOtp({
+          type: "recovery",
+          token_hash: tokenFromQuery,
+        });
+
+        if (error) {
+          toast.error("Invalid or expired reset link");
+          navigate("/login");
+          return;
+        }
+
+        if (!isMounted) return;
+        window.history.replaceState({}, document.title, "/reset-password");
+        setIsValidSession(true);
+        return;
+      }
+
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      if (hashParams.get("type") === "recovery") {
+        setIsValidSession(true);
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setIsValidSession(true);
       } else {
-        // Give it a moment for the token exchange to complete
-        setTimeout(() => {
-          supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-              toast.error("Invalid or expired reset link");
-              navigate("/auth");
-            }
-          });
-        }, 2000);
+        toast.error("Invalid or expired reset link");
+        navigate("/login");
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    void initializeResetSession();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -96,7 +111,7 @@ const ResetPassword = () => {
       }
 
       toast.success("Password updated successfully! Please log in with your new password.");
-      navigate("/auth");
+      navigate("/login");
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -158,7 +173,7 @@ const ResetPassword = () => {
               type="button"
               variant="ghost"
               className="w-full"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/login")}
             >
               Back to Login
             </Button>
