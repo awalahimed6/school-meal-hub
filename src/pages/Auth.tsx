@@ -90,26 +90,26 @@ const Auth = () => {
     try {
       resetSchema.parse({ email });
 
-      const resetLink = "https://nibsbss-school-meal.vercel.app/reset-password";
-
-      const { error } = await supabase.functions.invoke("request-password-reset", {
-        body: {
-          email,
-          redirectUrl: resetLink,
-        },
+      const { data, error } = await supabase.functions.invoke("request-password-reset", {
+        body: { email },
       });
 
-      if (error) throw error;
+      // Check for actual server errors (500s)
+      if (error) {
+        console.error("Reset function error:", error);
+        // Still show success message to prevent email enumeration
+      }
 
+      // Always show success message regardless of whether email exists
       toast.success("If an account exists with this email, a reset link has been sent.");
       setIsResetDialogOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
-      } else if (error instanceof Error && error.message.toLowerCase().includes("rate")) {
-        toast.error("Too many requests. Please wait a bit and try again.");
       } else {
-        toast.error("Unable to send reset link right now. Please try again.");
+        // Always show success to prevent email enumeration
+        toast.success("If an account exists with this email, a reset link has been sent.");
+        setIsResetDialogOpen(false);
       }
     } finally {
       setIsResetting(false);

@@ -17,9 +17,11 @@ serve(async (req) => {
 
   try {
     const { email } = (await req.json()) as { email?: string };
+    console.log("Password reset requested for:", email);
 
     // Always return success to prevent email enumeration
     if (!email || !isValidEmail(email)) {
+      console.log("Invalid or missing email, returning success silently");
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -30,10 +32,14 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const brevoApiKey = Deno.env.get("BREVO_API_KEY");
 
+    console.log("SUPABASE_URL present:", !!supabaseUrl);
+    console.log("SERVICE_ROLE_KEY present:", !!serviceRoleKey);
+    console.log("BREVO_API_KEY present:", !!brevoApiKey);
+
     if (!brevoApiKey) {
       console.error("BREVO_API_KEY is not configured");
-      return new Response(JSON.stringify({ error: "Email service not configured" }), {
-        status: 500,
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -43,6 +49,7 @@ serve(async (req) => {
     });
 
     // Generate recovery link with token
+    console.log("Generating recovery link...");
     const { data, error } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
@@ -50,23 +57,43 @@ serve(async (req) => {
     });
 
     if (error) {
-      console.warn("Recovery link generation skipped:", error.message);
+      console.warn("Recovery link generation failed:", error.message);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Extract token from the generated link
-    const tokenHash = data?.properties?.hashed_token;
-    const actionLink = data?.properties?.action_link;
-    const tokenFromLink = actionLink
-      ? new URL(actionLink).searchParams.get("token") || new URL(actionLink).searchParams.get("token_hash")
-      : null;
-    const token = tokenHash || tokenFromLink;
+    console.log("generateLink response data keys:", data ? Object.keys(data) : "null");
+    console.log("properties:", data?.properties ? Object.keys(data.properties) : "null");
+    console.log("action_link:", data?.properties?.action_link ? "present" : "missing");
+    console.log("hashed_token:", data?.properties?.hashed_token ? "present" : "missing");
+
+    // Extract token - try multiple methods
+    let token: string | null = null;
+    
+    // Method 1: hashed_token from properties
+    if (data?.properties?.hashed_token) {
+      token = data.properties.hashed_token;
+      console.log("Token found via hashed_token");
+    }
+    
+    // Method 2: Extract from action_link URL
+    if (!token && data?.properties?.action_link) {
+      try {
+        const actionUrl = new URL(data.properties.action_link);
+        token = actionUrl.searchParams.get("token") || 
+                actionUrl.searchParams.get("token_hash") || 
+                actionUrl.hash?.match(/token=([^&]+)/)?.[1] || null;
+        console.log("Token extracted from action_link:", !!token);
+      } catch (e) {
+        console.error("Failed to parse action_link:", e);
+      }
+    }
 
     if (!token) {
-      console.warn("No recovery token found");
+      console.warn("No recovery token found in response");
+      console.log("Full data.properties:", JSON.stringify(data?.properties));
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -74,8 +101,10 @@ serve(async (req) => {
     }
 
     const resetLink = `${RESET_PAGE_URL}?token=${encodeURIComponent(token)}`;
+    console.log("Reset link generated (domain only):", new URL(resetLink).origin);
 
     // Send email via Brevo API
+    console.log("Sending email via Brevo...");
     const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -108,23 +137,27 @@ serve(async (req) => {
       }),
     });
 
+    const brevoBody = await brevoResponse.text();
+    console.log(`Brevo response status: ${brevoResponse.status}`);
+    console.log(`Brevo response body: ${brevoBody}`);
+
     if (!brevoResponse.ok) {
-      const errBody = await brevoResponse.text();
-      console.error(`Brevo API error [${brevoResponse.status}]:`, errBody);
-      return new Response(JSON.stringify({ error: "Failed to send reset email" }), {
-        status: 500,
+      console.error(`Brevo API error [${brevoResponse.status}]:`, brevoBody);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    console.log("Password reset email sent successfully");
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("request-password-reset error:", error);
-    return new Response(JSON.stringify({ error: "Failed to process password reset" }), {
-      status: 500,
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
