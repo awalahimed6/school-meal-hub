@@ -1,32 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import { Resend } from "https://esm.sh/resend@4.0.0";
 
-const DEFAULT_RESET_PAGE = "https://nibsbss-school-meal.vercel.app/reset-password";
+const RESET_PAGE_URL = "https://nibsbss-school-meal.vercel.app/reset-password";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const isValidEmail = (email: string) => /^\S+@\S+\.\S+$/.test(email);
-
-const getResetPageUrl = (candidate?: string) => {
-  if (!candidate) return DEFAULT_RESET_PAGE;
-
-  try {
-    const parsed = new URL(candidate);
-    const allowed = new URL(DEFAULT_RESET_PAGE);
-
-    if (parsed.origin !== allowed.origin) {
-      return DEFAULT_RESET_PAGE;
-    }
-
-    return `${allowed.origin}/reset-password`;
-  } catch {
-    return DEFAULT_RESET_PAGE;
-  }
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -34,11 +16,9 @@ serve(async (req) => {
   }
 
   try {
-    const { email, redirectUrl } = (await req.json()) as {
-      email?: string;
-      redirectUrl?: string;
-    };
+    const { email } = (await req.json()) as { email?: string };
 
+    // Always return success to prevent email enumeration
     if (!email || !isValidEmail(email)) {
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
@@ -48,9 +28,10 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const brevoApiKey = Deno.env.get("BREVO_API_KEY");
 
-    if (!resendApiKey) {
+    if (!brevoApiKey) {
+      console.error("BREVO_API_KEY is not configured");
       return new Response(JSON.stringify({ error: "Email service not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -58,21 +39,14 @@ serve(async (req) => {
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+      auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const resend = new Resend(resendApiKey);
-    const resetPageUrl = getResetPageUrl(redirectUrl);
-
+    // Generate recovery link with token
     const { data, error } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
-      options: {
-        redirectTo: resetPageUrl,
-      },
+      options: { redirectTo: RESET_PAGE_URL },
     });
 
     if (error) {
@@ -83,42 +57,65 @@ serve(async (req) => {
       });
     }
 
-    const tokenHashFromProps = data?.properties?.hashed_token;
+    // Extract token from the generated link
+    const tokenHash = data?.properties?.hashed_token;
     const actionLink = data?.properties?.action_link;
-    const tokenFromActionLink = actionLink
+    const tokenFromLink = actionLink
       ? new URL(actionLink).searchParams.get("token") || new URL(actionLink).searchParams.get("token_hash")
       : null;
+    const token = tokenHash || tokenFromLink;
 
-    const tokenHash = tokenHashFromProps || tokenFromActionLink;
-
-    if (!tokenHash) {
-      console.warn("No recovery token found while generating password reset link");
+    if (!token) {
+      console.warn("No recovery token found");
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const customResetLink = `${resetPageUrl}?token=${encodeURIComponent(tokenHash)}`;
+    const resetLink = `${RESET_PAGE_URL}?token=${encodeURIComponent(token)}`;
 
-    await resend.emails.send({
-      from: "School Meal System <onboarding@resend.dev>",
-      to: [email],
-      subject: "Reset Your Password - School Meal System",
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827; max-width: 600px; margin: 0 auto;">
-          <h2 style="margin-bottom: 12px;">Reset Your Password</h2>
-          <p>We received a request to reset your password.</p>
-          <p>
-            <a href="${customResetLink}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600;">
-              Reset Password
-            </a>
-          </p>
-          <p>This link expires soon for your security.</p>
-          <p style="word-break: break-all; color: #2563eb;">${customResetLink}</p>
-        </div>
-      `,
+    // Send email via Brevo API
+    const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": brevoApiKey,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        sender: { name: "School Meal System", email: "no-reply@nibsbss.edu" },
+        to: [{ email }],
+        subject: "Reset Your Password - School Meal System",
+        htmlContent: `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937;">
+            <div style="text-align:center;margin-bottom:24px;">
+              <h1 style="font-size:24px;color:#1e40af;margin:0;">School Meal System</h1>
+            </div>
+            <h2 style="font-size:20px;margin-bottom:12px;">Reset Your Password</h2>
+            <p style="margin-bottom:20px;line-height:1.6;">We received a request to reset your password. Click the button below to set a new password:</p>
+            <div style="text-align:center;margin:28px 0;">
+              <a href="${resetLink}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">
+                Reset Password
+              </a>
+            </div>
+            <p style="font-size:13px;color:#6b7280;line-height:1.5;">If the button doesn't work, copy and paste this link into your browser:</p>
+            <p style="font-size:13px;word-break:break-all;color:#2563eb;margin-bottom:20px;">${resetLink}</p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+            <p style="font-size:12px;color:#9ca3af;">If you didn't request this, you can safely ignore this email. This link will expire soon for your security.</p>
+          </div>
+        `,
+      }),
     });
+
+    if (!brevoResponse.ok) {
+      const errBody = await brevoResponse.text();
+      console.error(`Brevo API error [${brevoResponse.status}]:`, errBody);
+      return new Response(JSON.stringify({ error: "Failed to send reset email" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
