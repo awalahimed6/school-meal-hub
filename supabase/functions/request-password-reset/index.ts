@@ -69,30 +69,12 @@ serve(async (req) => {
     console.log("action_link:", data?.properties?.action_link ? "present" : "missing");
     console.log("hashed_token:", data?.properties?.hashed_token ? "present" : "missing");
 
-    // Extract token - try multiple methods
-    let token: string | null = null;
-    
-    // Method 1: hashed_token from properties
-    if (data?.properties?.hashed_token) {
-      token = data.properties.hashed_token;
-      console.log("Token found via hashed_token");
-    }
-    
-    // Method 2: Extract from action_link URL
-    if (!token && data?.properties?.action_link) {
-      try {
-        const actionUrl = new URL(data.properties.action_link);
-        token = actionUrl.searchParams.get("token") || 
-                actionUrl.searchParams.get("token_hash") || 
-                actionUrl.hash?.match(/token=([^&]+)/)?.[1] || null;
-        console.log("Token extracted from action_link:", !!token);
-      } catch (e) {
-        console.error("Failed to parse action_link:", e);
-      }
-    }
+    // Use provider-generated action link to preserve token integrity,
+    // while forcing redirect target to the canonical reset page.
+    const actionLink = data?.properties?.action_link;
 
-    if (!token) {
-      console.warn("No recovery token found in response");
+    if (!actionLink) {
+      console.warn("No recovery action_link found in response");
       console.log("Full data.properties:", JSON.stringify(data?.properties));
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
@@ -100,7 +82,16 @@ serve(async (req) => {
       });
     }
 
-    const resetLink = `${RESET_PAGE_URL}?token=${encodeURIComponent(token)}`;
+    let resetLink = actionLink;
+    try {
+      const actionUrl = new URL(actionLink);
+      actionUrl.searchParams.set("redirect_to", RESET_PAGE_URL);
+      resetLink = actionUrl.toString();
+      console.log("Reset action_link normalized to redirect_to:", RESET_PAGE_URL);
+    } catch (parseError) {
+      console.warn("Failed to normalize action_link redirect_to, using original action_link", parseError);
+    }
+
     console.log("Reset link generated (domain only):", new URL(resetLink).origin);
 
     // Send email via Brevo API
