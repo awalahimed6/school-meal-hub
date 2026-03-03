@@ -95,7 +95,7 @@ serve(async (req) => {
         Accept: "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "School Meal System", email: "no-reply@nibsbss.edu" },
+        sender: { name: "School Meal System", email: "awalahimed463@gmail.com" },
         to: [{ email }],
         subject: "Reset Your Password - School Meal System",
         htmlContent: `
