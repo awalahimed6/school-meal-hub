@@ -69,12 +69,12 @@ serve(async (req) => {
     console.log("action_link:", data?.properties?.action_link ? "present" : "missing");
     console.log("hashed_token:", data?.properties?.hashed_token ? "present" : "missing");
 
-    // Use provider-generated action link to preserve token integrity,
-    // while forcing redirect target to the canonical reset page.
-    const actionLink = data?.properties?.action_link;
+    // Use hashed_token to build a direct link to the app's reset page.
+    // This avoids the Supabase /auth/v1/verify redirect which can fail.
+    const hashedToken = data?.properties?.hashed_token;
 
-    if (!actionLink) {
-      console.warn("No recovery action_link found in response");
+    if (!hashedToken) {
+      console.warn("No hashed_token found in response");
       console.log("Full data.properties:", JSON.stringify(data?.properties));
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
@@ -82,17 +82,8 @@ serve(async (req) => {
       });
     }
 
-    let resetLink = actionLink;
-    try {
-      const actionUrl = new URL(actionLink);
-      actionUrl.searchParams.set("redirect_to", RESET_PAGE_URL);
-      resetLink = actionUrl.toString();
-      console.log("Reset action_link normalized to redirect_to:", RESET_PAGE_URL);
-    } catch (parseError) {
-      console.warn("Failed to normalize action_link redirect_to, using original action_link", parseError);
-    }
-
-    console.log("Reset link generated (domain only):", new URL(resetLink).origin);
+    const resetLink = `${RESET_PAGE_URL}?token_hash=${encodeURIComponent(hashedToken)}&type=recovery`;
+    console.log("Reset link generated (direct to app):", RESET_PAGE_URL);
 
     // Send email via Brevo API
     console.log("Sending email via Brevo...");
