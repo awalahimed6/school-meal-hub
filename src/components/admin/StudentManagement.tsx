@@ -94,11 +94,8 @@ export const StudentManagement = () => {
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('student-profiles')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
+    // Store the file path (not public URL) since bucket is private
+    return filePath;
   };
 
   const createStudent = useMutation({
