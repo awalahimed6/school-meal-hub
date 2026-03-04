@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { SignedImage } from "@/components/ui/signed-image";
 import {
   Select,
   SelectContent,

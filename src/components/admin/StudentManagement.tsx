@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignedAvatar } from "@/components/ui/signed-image";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";

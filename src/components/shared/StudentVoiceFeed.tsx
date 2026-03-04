@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { SignedImage } from "@/components/ui/signed-image";
 
 interface StudentVoiceFeedProps {
   showHeader?: boolean;
