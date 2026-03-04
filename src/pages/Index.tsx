@@ -26,6 +26,7 @@ import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
 import { PhotoGallery } from "@/components/landing/PhotoGallery";
 import { DeveloperPortfolio } from "@/components/landing/DeveloperPortfolio";
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
@@ -33,6 +34,15 @@ const Index = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { setTheme } = useTheme();
+
+  // Force light mode on landing page, restore dark on leave
+  useEffect(() => {
+    setTheme("light");
+    return () => {
+      setTheme("dark");
+    };
+  }, [setTheme]);
 
   // Handle scroll for header background
   useEffect(() => {
