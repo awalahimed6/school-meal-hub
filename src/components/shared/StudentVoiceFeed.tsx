@@ -70,9 +70,8 @@ export const StudentVoiceFeed = ({ showHeader = true, limit = 6 }: StudentVoiceF
         throw new Error("Please login to like feedback");
       }
 
-      const { data, error } = await supabase.rpc("toggle_like", {
+      const { data, error } = await supabase.rpc("toggle_like" as any, {
         _rating_id: ratingId,
-        _user_id: user.id,
       });
 
       if (error) throw error;
