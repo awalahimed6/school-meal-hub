@@ -515,10 +515,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      toggle_like: {
-        Args: { _rating_id: string; _user_id: string }
-        Returns: boolean
-      }
+      toggle_like: { Args: { _rating_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "staff" | "student"
