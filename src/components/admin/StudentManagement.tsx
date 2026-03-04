@@ -604,11 +604,10 @@ export const StudentManagement = () => {
               {filteredStudents?.map((student) => (
                 <TableRow key={student.id}>
                   <TableCell>
-                    <Avatar>
-                      <AvatarImage src={student.profile_image || undefined} />
-                      <AvatarFallback>
-                        {student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
+                    <SignedAvatar
+                      src={student.profile_image}
+                      fallback={student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    />
                     </Avatar>
                   </TableCell>
                   <TableCell className="font-mono">{student.student_id}</TableCell>

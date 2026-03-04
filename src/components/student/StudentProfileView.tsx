@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { SignedAvatar } from "@/components/ui/signed-image";
 import { Badge } from "@/components/ui/badge";
 import { User, GraduationCap, Hash, Users } from "lucide-react";
 import { StudentSettings } from "./StudentSettings";
@@ -50,16 +50,19 @@ export const StudentProfileView = () => {
       <div className="text-center space-y-4">
         <div className="relative inline-block">
           <div className="absolute inset-0 bg-gradient-to-br from-primary to-purple-600 rounded-full animate-pulse opacity-20 blur-xl"></div>
-          <Avatar className="h-32 w-32 border-4 border-primary relative">
-            <AvatarImage src={student.profile_image || undefined} />
-            <AvatarFallback className="text-3xl bg-gradient-to-br from-primary to-purple-600 text-white">
-              {student.full_name
-                ?.split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <SignedAvatar
+            src={student.profile_image}
+            className="h-32 w-32 border-4 border-primary relative"
+            fallback={
+              <span className="text-3xl bg-gradient-to-br from-primary to-purple-600 text-white">
+                {student.full_name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()}
+              </span>
+            }
+          />
           <Badge className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary">
             Pro
           </Badge>

@@ -390,11 +390,10 @@ export const MealReports = () => {
                           </span>
                         </div>
                         {rating.image_url && (
-                          <img
-                            src={rating.image_url}
+                          <SignedImage
+                            storedUrl={rating.image_url}
                             alt="Student meal photo"
                             className="rounded-lg max-w-xs object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => window.open(rating.image_url, "_blank")}
                           />
                         )}
                         <span className="text-xs text-muted-foreground block">

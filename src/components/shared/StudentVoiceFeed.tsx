@@ -153,8 +153,8 @@ export const StudentVoiceFeed = ({ showHeader = true, limit = 6 }: StudentVoiceF
 
           {/* Image if present */}
           {rating.image_url && (
-            <img
-              src={rating.image_url}
+            <SignedImage
+              storedUrl={rating.image_url}
               alt="Meal photo"
               className="rounded-lg w-full h-32 object-cover"
             />
