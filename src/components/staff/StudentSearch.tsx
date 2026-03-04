@@ -218,7 +218,6 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
                         className="h-10 w-10"
                         fallback={student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
                       />
-                      </Avatar>
                       <div className="flex-1">
                         <p className="font-medium">{student.full_name}</p>
                         <p className="text-sm text-muted-foreground">
@@ -266,7 +265,7 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
                   className="h-16 w-16"
                   fallback={<span className="text-lg">{selectedStudent.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}</span>}
                 />
-                </Avatar>
+                
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold">{selectedStudent.full_name}</h3>
                   <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted-foreground">

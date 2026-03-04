@@ -608,7 +608,6 @@ export const StudentManagement = () => {
                       src={student.profile_image}
                       fallback={student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
                     />
-                    </Avatar>
                   </TableCell>
                   <TableCell className="font-mono">{student.student_id}</TableCell>
                   <TableCell>{student.full_name}</TableCell>
