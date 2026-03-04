@@ -26,6 +26,7 @@ import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
 import { PhotoGallery } from "@/components/landing/PhotoGallery";
 import { DeveloperPortfolio } from "@/components/landing/DeveloperPortfolio";
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
