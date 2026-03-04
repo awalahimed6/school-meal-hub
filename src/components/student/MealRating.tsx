@@ -114,11 +114,8 @@ const MealRatingSection = ({
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("meal-photos")
-          .getPublicUrl(fileName);
-
-        imageUrl = publicUrl;
+        // Store the file path (not public URL) since bucket is private
+        imageUrl = fileName;
       }
 
       const { error } = await supabase.from("meal_ratings").insert({

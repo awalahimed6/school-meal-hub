@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SignedAvatar } from "@/components/ui/signed-image";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Table,
@@ -213,12 +213,11 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
                       onClick={() => handleSelectStudent(student)}
                       className="flex w-full items-center gap-3 rounded-lg p-3 text-left hover:bg-accent"
                     >
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={student.profile_image || undefined} />
-                        <AvatarFallback>
-                          {student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <SignedAvatar
+                        src={student.profile_image}
+                        className="h-10 w-10"
+                        fallback={student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      />
                       <div className="flex-1">
                         <p className="font-medium">{student.full_name}</p>
                         <p className="text-sm text-muted-foreground">
@@ -261,12 +260,12 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-start gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={selectedStudent.profile_image || undefined} />
-                  <AvatarFallback className="text-lg">
-                    {selectedStudent.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <SignedAvatar
+                  src={selectedStudent.profile_image}
+                  className="h-16 w-16"
+                  fallback={<span className="text-lg">{selectedStudent.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}</span>}
+                />
+                
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold">{selectedStudent.full_name}</h3>
                   <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted-foreground">

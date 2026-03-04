@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SignedAvatar } from "@/components/ui/signed-image";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, Filter, Upload, X, RefreshCw } from "lucide-react";
@@ -94,11 +95,8 @@ export const StudentManagement = () => {
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('student-profiles')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
+    // Store the file path (not public URL) since bucket is private
+    return filePath;
   };
 
   const createStudent = useMutation({
@@ -607,12 +605,10 @@ export const StudentManagement = () => {
               {filteredStudents?.map((student) => (
                 <TableRow key={student.id}>
                   <TableCell>
-                    <Avatar>
-                      <AvatarImage src={student.profile_image || undefined} />
-                      <AvatarFallback>
-                        {student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <SignedAvatar
+                      src={student.profile_image}
+                      fallback={student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    />
                   </TableCell>
                   <TableCell className="font-mono">{student.student_id}</TableCell>
                   <TableCell>{student.full_name}</TableCell>

@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { SignedImage } from "@/components/ui/signed-image";
 
 interface StudentVoiceFeedProps {
   showHeader?: boolean;
@@ -153,8 +154,8 @@ export const StudentVoiceFeed = ({ showHeader = true, limit = 6 }: StudentVoiceF
 
           {/* Image if present */}
           {rating.image_url && (
-            <img
-              src={rating.image_url}
+            <SignedImage
+              storedUrl={rating.image_url}
               alt="Meal photo"
               className="rounded-lg w-full h-32 object-cover"
             />
