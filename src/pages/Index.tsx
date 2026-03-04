@@ -34,6 +34,15 @@ const Index = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { setTheme } = useTheme();
+
+  // Force light mode on landing page, restore dark on leave
+  useEffect(() => {
+    setTheme("light");
+    return () => {
+      setTheme("dark");
+    };
+  }, [setTheme]);
 
   // Handle scroll for header background
   useEffect(() => {
