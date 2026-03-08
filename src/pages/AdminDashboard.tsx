@@ -195,8 +195,8 @@ const AdminDashboard = () => {
                   onClick={() => setActiveSection(item.key)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative ${
                     isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/30"
-                      : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
+                      ? "bg-gradient-to-r from-[hsl(42_90%_55%)] to-[hsl(24_95%_53%)] text-white shadow-lg shadow-[hsl(42_80%_50%/0.3)]"
+                      : "text-sidebar-foreground/60 hover:bg-white/8 hover:text-sidebar-foreground"
                   }`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
