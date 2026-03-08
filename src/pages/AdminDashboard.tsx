@@ -3,7 +3,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Users, UserCog, BarChart3, LogOut, UtensilsCrossed, Clock,
   Home, Key, ImageIcon, HelpCircle, ChevronLeft, ChevronRight,
-  GraduationCap, Search,
+  GraduationCap, TrendingUp, Activity, ArrowUpRight,
 } from "lucide-react";
 import { StudentManagement } from "@/components/admin/StudentManagement";
 import { StaffManagement } from "@/components/admin/StaffManagement";
@@ -52,16 +52,27 @@ type AdminSection =
   | "knowledge"
   | "reports";
 
-const sidebarItems: { key: AdminSection; label: string; icon: React.ElementType }[] = [
-  { key: "dashboard", label: "Dashboard", icon: Home },
-  { key: "students", label: "Students", icon: Users },
-  { key: "staff", label: "Staff", icon: UserCog },
-  { key: "menu", label: "Menu", icon: UtensilsCrossed },
-  { key: "schedules", label: "Schedules", icon: Clock },
-  { key: "gallery", label: "Gallery", icon: ImageIcon },
-  { key: "knowledge", label: "FAQs", icon: HelpCircle },
-  { key: "reports", label: "Reports", icon: BarChart3 },
+const sidebarItems: { key: AdminSection; label: string; icon: React.ElementType; description: string }[] = [
+  { key: "dashboard", label: "Overview", icon: Home, description: "Dashboard home" },
+  { key: "students", label: "Students", icon: Users, description: "Manage students" },
+  { key: "staff", label: "Staff", icon: UserCog, description: "Manage staff" },
+  { key: "menu", label: "Menu", icon: UtensilsCrossed, description: "Weekly menus" },
+  { key: "schedules", label: "Schedules", icon: Clock, description: "Meal times" },
+  { key: "gallery", label: "Gallery", icon: ImageIcon, description: "Photos & video" },
+  { key: "knowledge", label: "FAQs", icon: HelpCircle, description: "Knowledge base" },
+  { key: "reports", label: "Reports", icon: BarChart3, description: "Analytics" },
 ];
+
+const sectionTitles: Record<AdminSection, { title: string; subtitle: string }> = {
+  dashboard: { title: "Dashboard Overview", subtitle: "Welcome back, here's what's happening today" },
+  students: { title: "Student Management", subtitle: "Add, update, delete, and view student records" },
+  staff: { title: "Staff Management", subtitle: "Manage cafeteria staff members and their access" },
+  menu: { title: "Menu Manager", subtitle: "Manage weekly menu items for breakfast, lunch, and dinner" },
+  schedules: { title: "Meal Schedules", subtitle: "Set serving times for breakfast, lunch, and dinner" },
+  gallery: { title: "Campus Gallery", subtitle: "Upload campus photos and the meal system demo video" },
+  knowledge: { title: "Knowledge Base", subtitle: "Manage FAQs for the chatbot and Telegram bot" },
+  reports: { title: "Reports & Analytics", subtitle: "View comprehensive meal tracking data and analytics" },
+};
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -73,15 +84,12 @@ const AdminDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
-  // Stats queries
   const today = format(new Date(), "yyyy-MM-dd");
 
   const { data: totalStudents = 0 } = useQuery({
     queryKey: ["admin-stat-students"],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("students")
-        .select("*", { count: "exact", head: true });
+      const { count, error } = await supabase.from("students").select("*", { count: "exact", head: true });
       if (error) throw error;
       return count || 0;
     },
@@ -90,10 +98,7 @@ const AdminDashboard = () => {
   const { data: mealsToday = 0 } = useQuery({
     queryKey: ["admin-stat-meals-today", today],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("meals")
-        .select("*", { count: "exact", head: true })
-        .eq("meal_date", today);
+      const { count, error } = await supabase.from("meals").select("*", { count: "exact", head: true }).eq("meal_date", today);
       if (error) throw error;
       return count || 0;
     },
@@ -102,9 +107,7 @@ const AdminDashboard = () => {
   const { data: totalStaff = 0 } = useQuery({
     queryKey: ["admin-stat-staff"],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("staff")
-        .select("*", { count: "exact", head: true });
+      const { count, error } = await supabase.from("staff").select("*", { count: "exact", head: true });
       if (error) throw error;
       return count || 0;
     },
@@ -113,10 +116,7 @@ const AdminDashboard = () => {
   const { data: pendingFeedback = 0 } = useQuery({
     queryKey: ["admin-stat-feedback-today", today],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("meal_ratings")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", `${today}T00:00:00`);
+      const { count, error } = await supabase.from("meal_ratings").select("*", { count: "exact", head: true }).gte("created_at", `${today}T00:00:00`);
       if (error) throw error;
       return count || 0;
     },
@@ -129,14 +129,8 @@ const AdminDashboard = () => {
   };
 
   const handlePasswordChange = async () => {
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
+    if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    if (newPassword !== confirmPassword) { toast.error("Passwords do not match"); return; }
     setIsUpdatingPassword(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -155,54 +149,43 @@ const AdminDashboard = () => {
   const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
 
   const statCards = [
-    {
-      label: "Total Students",
-      value: totalStudents,
-      icon: GraduationCap,
-      gradient: "from-[hsl(215,70%,40%)] to-[hsl(215,60%,55%)]",
-    },
-    {
-      label: "Meals Served Today",
-      value: mealsToday,
-      icon: UtensilsCrossed,
-      gradient: "from-[hsl(142,71%,40%)] to-[hsl(142,60%,55%)]",
-    },
-    {
-      label: "Staff Members",
-      value: totalStaff,
-      icon: UserCog,
-      gradient: "from-[hsl(24,95%,50%)] to-[hsl(42,90%,55%)]",
-    },
-    {
-      label: "Feedback Today",
-      value: pendingFeedback,
-      icon: BarChart3,
-      gradient: "from-[hsl(0,70%,55%)] to-[hsl(24,90%,55%)]",
-    },
+    { label: "Total Students", value: totalStudents, icon: GraduationCap, color: "text-secondary", bg: "bg-secondary/10", border: "border-secondary/20" },
+    { label: "Meals Today", value: mealsToday, icon: UtensilsCrossed, color: "text-[hsl(var(--success))]", bg: "bg-[hsl(var(--success))]/10", border: "border-[hsl(var(--success))]/20" },
+    { label: "Staff Members", value: totalStaff, icon: UserCog, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
+    { label: "Feedback Today", value: pendingFeedback, icon: BarChart3, color: "text-accent", bg: "bg-accent/10", border: "border-accent/20" },
   ];
+
+  const currentSection = sectionTitles[activeSection];
 
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
       <div className="min-h-screen bg-background flex">
-        {/* Sidebar */}
+        {/* ── Sidebar ── */}
         <aside
-          className={`fixed top-0 left-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col ${
-            sidebarCollapsed ? "w-16" : "w-56"
+          className={`fixed top-0 left-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-sidebar-border ${
+            sidebarCollapsed ? "w-[68px]" : "w-60"
           }`}
         >
-          {/* Sidebar Header */}
-          <div className="flex items-center gap-3 px-4 py-4 border-b border-sidebar-border min-h-[64px]">
-            <GraduationCap className="h-7 w-7 text-sidebar-primary shrink-0" />
+          {/* Logo */}
+          <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border shrink-0">
+            <div className="h-9 w-9 rounded-xl bg-sidebar-primary/20 flex items-center justify-center shrink-0">
+              <GraduationCap className="h-5 w-5 text-sidebar-primary" />
+            </div>
             {!sidebarCollapsed && (
               <div className="overflow-hidden">
-                <p className="text-sm font-bold leading-tight truncate">Admin Dashboard</p>
-                <p className="text-[10px] text-sidebar-accent-foreground/60 truncate">Meal Management</p>
+                <p className="text-sm font-bold leading-tight truncate tracking-tight">Ifa Boru</p>
+                <p className="text-[10px] text-sidebar-foreground/50 truncate">Admin Console</p>
               </div>
             )}
           </div>
 
-          {/* Nav Items */}
-          <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
+          {/* Navigation */}
+          <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+            {!sidebarCollapsed && (
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 px-3 mb-2">
+                Navigation
+              </p>
+            )}
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeSection === item.key;
@@ -210,58 +193,63 @@ const AdminDashboard = () => {
                 <button
                   key={item.key}
                   onClick={() => setActiveSection(item.key)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative ${
                     isActive
-                      ? "bg-sidebar-accent text-sidebar-primary"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/30"
+                      : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
                   }`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
-                  <Icon className="h-5 w-5 shrink-0" />
+                  <Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? "" : "group-hover:scale-110 transition-transform"}`} />
                   {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                  {isActive && !sidebarCollapsed && (
+                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary-foreground/80" />
+                  )}
                 </button>
               );
             })}
           </nav>
 
-          {/* Collapse Toggle */}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="flex items-center justify-center py-3 border-t border-sidebar-border hover:bg-sidebar-accent/50 transition-colors"
-          >
-            {sidebarCollapsed ? (
-              <ChevronRight className="h-5 w-5" />
-            ) : (
-              <ChevronLeft className="h-5 w-5" />
-            )}
-          </button>
+          {/* Collapse */}
+          <div className="border-t border-sidebar-border p-2">
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground transition-all text-xs"
+            >
+              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : (
+                <>
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Collapse</span>
+                </>
+              )}
+            </button>
+          </div>
         </aside>
 
-        {/* Main Content */}
-        <div
-          className={`flex-1 transition-all duration-300 ${
-            sidebarCollapsed ? "ml-16" : "ml-56"
-          }`}
-        >
-          {/* Top Header */}
-          <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-6 border-b bg-card/80 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold capitalize">
-                {activeSection === "knowledge" ? "FAQs" : activeSection}
-              </h2>
+        {/* ── Main Content ── */}
+        <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? "ml-[68px]" : "ml-60"}`}>
+          {/* Top Bar */}
+          <header className="sticky top-0 z-30 h-16 flex items-center justify-between px-6 bg-background/80 backdrop-blur-xl border-b border-border/50">
+            <div>
+              <h1 className="text-base font-bold text-foreground leading-tight">{currentSection.title}</h1>
+              <p className="text-xs text-muted-foreground">{currentSection.subtitle}</p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <ThemeToggle />
               <AdminFeedbackBell />
+              
+              <div className="w-px h-6 bg-border mx-1.5" />
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 h-10 px-2">
-                    <span className="hidden sm:block text-sm text-muted-foreground max-w-[200px] truncate">
-                      {user?.email}
-                    </span>
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  <Button variant="ghost" className="flex items-center gap-2.5 h-10 px-2.5 rounded-xl">
+                    <div className="hidden sm:block text-right">
+                      <p className="text-xs font-semibold leading-tight">Administrator</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight max-w-[140px] truncate">{user?.email}</p>
+                    </div>
+                    <Avatar className="h-8 w-8 border-2 border-primary/20">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
                         {user?.email ? getInitials(user.email) : "AD"}
                       </AvatarFallback>
                     </Avatar>
@@ -270,10 +258,8 @@ const AdminDashboard = () => {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">Administrator</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email}
-                      </p>
+                      <p className="text-sm font-semibold leading-none">Administrator</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -291,185 +277,97 @@ const AdminDashboard = () => {
             </div>
           </header>
 
-          {/* Password Change Dialog */}
+          {/* Password Dialog */}
           <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Change Password</DialogTitle>
-                <DialogDescription>
-                  Enter your new password below. Password must be at least 6 characters.
-                </DialogDescription>
+                <DialogDescription>Enter your new password below. Minimum 6 characters.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                  />
+                  <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm new password"
-                  />
+                  <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" />
                 </div>
-                <Button
-                  onClick={handlePasswordChange}
-                  disabled={isUpdatingPassword}
-                  className="w-full"
-                >
+                <Button onClick={handlePasswordChange} disabled={isUpdatingPassword} className="w-full">
                   {isUpdatingPassword ? "Updating..." : "Update Password"}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
 
-          {/* Page Content */}
+          {/* ── Page Content ── */}
           <main className="p-6">
-            {activeSection === "dashboard" && (
-              <div className="space-y-6">
-                {/* Stat Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {statCards.map((stat) => {
-                    const Icon = stat.icon;
-                    return (
-                      <div
-                        key={stat.label}
-                        className={`rounded-xl bg-gradient-to-br ${stat.gradient} p-5 text-white shadow-lg`}
-                      >
-                        <div className="flex items-center gap-2 mb-3">
-                          <Icon className="h-5 w-5 opacity-90" />
-                          <p className="text-sm font-medium opacity-90">{stat.label}</p>
-                        </div>
-                        <p className="text-3xl font-bold">{stat.value}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Quick access cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {sidebarItems
-                    .filter((i) => i.key !== "dashboard")
-                    .map((item) => {
-                      const Icon = item.icon;
+            <div key={activeSection} className="animate-fade-in">
+              {activeSection === "dashboard" && (
+                <div className="space-y-8">
+                  {/* Stat Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {statCards.map((stat) => {
+                      const Icon = stat.icon;
                       return (
-                        <Card
-                          key={item.key}
-                          className="cursor-pointer hover:shadow-md transition-shadow border-border/50"
-                          onClick={() => setActiveSection(item.key)}
-                        >
-                          <CardContent className="flex items-center gap-4 p-5">
-                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <Icon className="h-5 w-5 text-primary" />
+                        <Card key={stat.label} className={`relative overflow-hidden border ${stat.border} bg-card hover:shadow-lg transition-all duration-300 group`}>
+                          <CardContent className="p-5">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2">
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                                <p className="text-3xl font-extrabold text-foreground tracking-tight">{stat.value}</p>
+                              </div>
+                              <div className={`h-11 w-11 rounded-2xl ${stat.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                                <Icon className={`h-5 w-5 ${stat.color}`} />
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-semibold">{item.label}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Manage {item.label.toLowerCase()}
-                              </p>
-                            </div>
+                            {/* Decorative bar */}
+                            <div className={`absolute bottom-0 left-0 right-0 h-1 ${stat.bg}`} />
                           </CardContent>
                         </Card>
                       );
                     })}
-                </div>
-              </div>
-            )}
+                  </div>
 
-            {activeSection === "students" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                  {/* Quick Access */}
                   <div>
-                    <h3 className="text-xl font-bold">Student Management</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Add, update, delete, and view student records
-                    </p>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Quick Access</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {sidebarItems.filter((i) => i.key !== "dashboard").map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.key}
+                            onClick={() => setActiveSection(item.key)}
+                            className="group flex items-center gap-3.5 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-md transition-all duration-200 text-left"
+                          >
+                            <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center group-hover:bg-primary/15 transition-colors shrink-0">
+                              <Icon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                              <p className="text-[11px] text-muted-foreground truncate">{item.description}</p>
+                            </div>
+                            <ArrowUpRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-                <StudentManagement />
-              </div>
-            )}
+              )}
 
-            {activeSection === "staff" && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold">Staff Management</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Manage cafeteria staff members and their access
-                  </p>
-                </div>
-                <StaffManagement />
-              </div>
-            )}
-
-            {activeSection === "reports" && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold">Meal Statistics & Reports</h3>
-                  <p className="text-sm text-muted-foreground">
-                    View comprehensive meal tracking data and analytics
-                  </p>
-                </div>
-                <MealReports />
-              </div>
-            )}
-
-            {activeSection === "menu" && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold">Menu Manager</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Manage weekly menu items for breakfast, lunch, and dinner
-                  </p>
-                </div>
-                <MenuManager />
-              </div>
-            )}
-
-            {activeSection === "schedules" && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold">Meal Schedule Configuration</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Set serving times for breakfast, lunch, and dinner
-                  </p>
-                </div>
-                <MealScheduleManager />
-              </div>
-            )}
-
-            {activeSection === "gallery" && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold">Campus Gallery & Video</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Upload campus photos and the meal system demo video
-                  </p>
-                </div>
-                <GalleryManager />
-              </div>
-            )}
-
-            {activeSection === "knowledge" && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold">Knowledge Base Manager</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Manage FAQs that the chatbot and Telegram bot use to answer student questions
-                  </p>
-                </div>
-                <KnowledgeBaseManager />
-              </div>
-            )}
+              {activeSection === "students" && <StudentManagement />}
+              {activeSection === "staff" && <StaffManagement />}
+              {activeSection === "reports" && <MealReports />}
+              {activeSection === "menu" && <MenuManager />}
+              {activeSection === "schedules" && <MealScheduleManager />}
+              {activeSection === "gallery" && <GalleryManager />}
+              {activeSection === "knowledge" && <KnowledgeBaseManager />}
+            </div>
           </main>
         </div>
       </div>
