@@ -26,6 +26,8 @@ interface AdminHeaderProps {
   userEmail?: string;
   onPasswordChange: () => void;
   onSignOut: () => void;
+  sidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export { sectionTitles };
