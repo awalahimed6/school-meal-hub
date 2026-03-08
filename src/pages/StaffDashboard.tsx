@@ -187,7 +187,7 @@ const StaffDashboard = () => {
                   <CardTitle>Student Meal Recording</CardTitle>
                 </div>
                 <CardDescription>
-                  Search for students by ID or scan their QR code
+                  Search for students by ID or scan their QR code to record meals
                 </CardDescription>
               </CardHeader>
               <CardContent>
