@@ -74,45 +74,55 @@ const SidebarInner = ({ activeSection, onSectionChange, collapsed, onToggleColla
             Main Menu
           </p>
         </div>
-        {sidebarItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeSection === item.key;
-          return (
-            <button
-              key={item.key}
-              onClick={() => onSectionChange(item.key)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 group relative ${
-                collapsed && !isMobile ? "justify-center" : ""
-              } ${
-                isActive
-                  ? "text-white"
-                  : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
-              }`}
-              title={collapsed && !isMobile ? item.label : undefined}
-            >
-              {/* Active background */}
-              {isActive && (
-                <>
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[hsl(42_85%_52%)] to-[hsl(24_90%_50%)] opacity-90" />
-                  <div className="absolute inset-0 rounded-xl shadow-[0_4px_20px_-4px_hsl(42_80%_50%/0.5)]" />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/15 to-transparent" style={{ height: '50%' }} />
-                </>
-              )}
-              
-              {/* Active indicator bar */}
-              {isActive && !isMobile && (
-                <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-[hsl(42_90%_65%)] shadow-[0_0_8px_hsl(42_90%_60%/0.6)]" />
-              )}
+        <TooltipProvider delayDuration={0}>
+          {sidebarItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeSection === item.key;
+            const showTooltip = collapsed && !isMobile;
+            const btn = (
+              <button
+                key={item.key}
+                onClick={() => onSectionChange(item.key)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 group relative ${
+                  collapsed && !isMobile ? "justify-center" : ""
+                } ${
+                  isActive
+                    ? "text-white"
+                    : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
+                }`}
+              >
+                {isActive && (
+                  <>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[hsl(42_85%_52%)] to-[hsl(24_90%_50%)] opacity-90" />
+                    <div className="absolute inset-0 rounded-xl shadow-[0_4px_20px_-4px_hsl(42_80%_50%/0.5)]" />
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/15 to-transparent" style={{ height: '50%' }} />
+                  </>
+                )}
+                {isActive && !isMobile && (
+                  <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-[hsl(42_90%_65%)] shadow-[0_0_8px_hsl(42_90%_60%/0.6)]" />
+                )}
+                <Icon className={`relative h-[18px] w-[18px] shrink-0 transition-all duration-200 ${
+                  isActive ? "drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]" : "group-hover:scale-110"
+                }`} />
+                <span className={`relative truncate transition-all duration-300 ${collapsed && !isMobile ? "w-0 opacity-0 hidden" : "w-auto opacity-100"}`}>
+                  {item.label}
+                </span>
+              </button>
+            );
 
-              <Icon className={`relative h-[18px] w-[18px] shrink-0 transition-all duration-200 ${
-                isActive ? "drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]" : "group-hover:scale-110"
-              }`} />
-              <span className={`relative truncate transition-all duration-300 ${collapsed && !isMobile ? "w-0 opacity-0 hidden" : "w-auto opacity-100"}`}>
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
+            if (showTooltip) {
+              return (
+                <Tooltip key={item.key}>
+                  <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                  <TooltipContent side="right" className="font-semibold">
+                    {item.label}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+            return btn;
+          })}
+        </TooltipProvider>
       </nav>
 
       {/* ─── Bottom Section ─── */}
