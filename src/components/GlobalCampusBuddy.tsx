@@ -169,8 +169,8 @@ export const GlobalCampusBuddy = () => {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onClick={handleFabClick}
-        className={`fixed z-50 h-14 w-14 rounded-full shadow-2xl transition-shadow duration-300 bg-gradient-to-r from-primary to-orange-600 touch-none select-none ${
-          isDragging ? "scale-110 shadow-3xl cursor-grabbing" : "hover:scale-110 cursor-grab"
+        className={`fixed z-50 h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-primary to-orange-600 touch-none select-none ${
+          isDragging ? "scale-110 shadow-3xl cursor-grabbing" : "hover:scale-110 cursor-grab transition-all duration-300"
         }`}
         style={{
           right: `${24 - position.x}px`,
