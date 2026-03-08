@@ -162,6 +162,15 @@ export const GlobalCampusBuddy = () => {
 
   return (
     <>
+      {/* Backdrop overlay to close on outside tap */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Draggable Floating Action Button */}
       <Button
         ref={fabRef}
@@ -187,34 +196,39 @@ export const GlobalCampusBuddy = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className={`fixed z-50 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 rounded-2xl ${
+        <Card className={`fixed z-50 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 rounded-2xl border-0 ring-1 ring-border/50 ${
           isStudentDashboard
-            ? "bottom-32 right-4 left-4 h-[65dvh] sm:left-auto sm:w-[380px] sm:h-[500px] sm:right-6"
-            : "inset-0 h-[100dvh] rounded-none sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[380px] sm:h-[600px] sm:rounded-2xl"
+            ? "bottom-32 right-4 left-4 h-[65dvh] sm:left-auto sm:w-[400px] sm:h-[520px] sm:right-6"
+            : "inset-0 h-[100dvh] rounded-none sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[600px] sm:rounded-2xl"
         }`}>
           {/* Header */}
-          <CardHeader className="bg-gradient-to-r from-primary to-orange-600 text-white p-4 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Bot className="h-6 w-6" />
-                Nejo Campus Buddy
+          <CardHeader className="bg-gradient-to-r from-[hsl(220_16%_18%)] via-[hsl(220_14%_15%)] to-[hsl(220_12%_12%)] text-white p-4 flex-shrink-0 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-[hsl(42_80%_55%/0.08)] to-transparent" />
+            <div className="relative flex items-center justify-between">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[hsl(42_90%_55%)] to-[hsl(24_95%_53%)] flex items-center justify-center shadow-lg shadow-[hsl(42_80%_50%/0.3)]">
+                  <Bot className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="block leading-tight">Campus Buddy</span>
+                  <span className="text-[10px] font-normal text-white/50 tracking-wide uppercase">AI Assistant</span>
+                </div>
               </CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
-                className="text-white hover:bg-white/20 sm:hidden"
+                className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8 rounded-lg"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-xs text-white/80 mt-1">Your school assistant</p>
           </CardHeader>
 
           {/* Messages */}
-          <CardContent className="flex-1 p-0 overflow-hidden">
+          <CardContent className="flex-1 p-0 overflow-hidden bg-card">
             <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {messages.map((message, index) => (
                   <div
                     key={index}
@@ -223,19 +237,19 @@ export const GlobalCampusBuddy = () => {
                     }`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                         message.role === "user"
-                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          ? "bg-gradient-to-r from-primary to-[hsl(24_90%_48%)] text-primary-foreground rounded-br-md shadow-sm"
                           : "bg-muted text-foreground rounded-bl-md"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                     </div>
                   </div>
                 ))}
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-2">
+                    <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-2.5">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Thinking...
@@ -247,9 +261,9 @@ export const GlobalCampusBuddy = () => {
             </ScrollArea>
           </CardContent>
 
-          {/* Input - with safe area padding for mobile */}
-          <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4 border-t flex-shrink-0 bg-card">
-            <div className="flex gap-2">
+          {/* Input */}
+          <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3 border-t flex-shrink-0 bg-card">
+            <div className="flex gap-2 items-center">
               <Input
                 ref={inputRef}
                 value={input}
@@ -257,13 +271,13 @@ export const GlobalCampusBuddy = () => {
                 onKeyPress={handleKeyPress}
                 placeholder="Ask me anything..."
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 rounded-xl border-muted bg-muted/50 focus:bg-card"
               />
               <Button
                 onClick={handleSendMessage}
                 disabled={!input.trim() || isLoading}
                 size="icon"
-                className="bg-primary hover:bg-primary/90"
+                className="bg-gradient-to-r from-primary to-[hsl(24_90%_48%)] hover:opacity-90 rounded-xl h-10 w-10 shrink-0"
               >
                 <Send className="h-4 w-4" />
               </Button>
