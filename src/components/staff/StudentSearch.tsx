@@ -52,12 +52,12 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
     queryFn: async () => {
       if (!searchQuery.trim()) return [];
 
-      const query = searchQuery.trim().toUpperCase();
+      const query = searchQuery.trim();
       
       const { data, error } = await supabase
         .from("students")
         .select("*")
-        .or(`student_id.ilike.%${query}%,full_name.ilike.%${query}%`)
+        .ilike("student_id", `%${query}%`)
         .limit(10);
 
       if (error) throw error;
