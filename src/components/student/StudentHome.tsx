@@ -4,16 +4,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { StudentQRCard } from "./StudentQRCard";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { UtensilsCrossed, Coffee, Soup, TrendingUp, Calendar } from "lucide-react";
+import { UtensilsCrossed, Coffee, Soup, TrendingUp, Calendar, Star, Megaphone, ChevronRight, QrCode, BookOpen } from "lucide-react";
 
-export const StudentHome = () => {
+type TabType = "home" | "menu" | "history" | "voice" | "profile";
+
+interface StudentHomeProps {
+  onNavigate?: (tab: TabType) => void;
+}
+
+export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
   const { user } = useAuth();
   const today = format(new Date(), "yyyy-MM-dd");
   const monthStart = format(startOfMonth(new Date()), "yyyy-MM-dd");
   const monthEnd = format(endOfMonth(new Date()), "yyyy-MM-dd");
   const currentDay = format(new Date(), "EEEE");
 
-  // Fetch today's meals count for this student
   const { data: todayMeals } = useQuery({
     queryKey: ["student-today-meals", user?.id, today],
     queryFn: async () => {
@@ -33,7 +38,6 @@ export const StudentHome = () => {
     enabled: !!user,
   });
 
-  // Fetch monthly meal count
   const { data: monthlyCount } = useQuery({
     queryKey: ["student-monthly-meals", user?.id, monthStart],
     queryFn: async () => {
@@ -54,7 +58,6 @@ export const StudentHome = () => {
     enabled: !!user,
   });
 
-  // Fetch today's menu
   const { data: todayMenu } = useQuery({
     queryKey: ["home-today-menu", currentDay],
     queryFn: async () => {
@@ -74,63 +77,122 @@ export const StudentHome = () => {
     { type: "dinner", icon: Soup, label: "Dinner", emoji: "🍝" },
   ];
 
+  const quickActions = [
+    { icon: UtensilsCrossed, label: "Today's Menu", desc: "See what's cooking", tab: "menu" as TabType, color: "bg-primary/10 text-primary" },
+    { icon: Star, label: "Rate Meal", desc: "Share your feedback", tab: "history" as TabType, color: "bg-accent/10 text-accent" },
+    { icon: Megaphone, label: "Community", desc: "Student voices", tab: "voice" as TabType, color: "bg-secondary/10 text-secondary" },
+    { icon: QrCode, label: "My QR Code", desc: "Scan at cafeteria", tab: null, color: "bg-primary/10 text-primary" },
+  ];
+
   return (
-    <div className="space-y-5 pb-24">
-      {/* Quick Stats Row */}
+    <div className="space-y-6 pb-24">
+      {/* Stats Row */}
       <div className="grid grid-cols-2 gap-3">
-        <Card className="border-0 shadow-md">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Today</p>
-              <p className="text-xl font-bold text-foreground">{checkedMeals.length}/3</p>
+        <Card className="border-0 shadow-md overflow-hidden">
+          <CardContent className="p-4 relative">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full -translate-y-4 translate-x-4" />
+            <div className="flex items-center gap-3 relative">
+              <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">Today</p>
+                <p className="text-2xl font-extrabold text-foreground leading-none mt-0.5">{checkedMeals.length}<span className="text-sm font-medium text-muted-foreground">/3</span></p>
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 text-accent" />
-            </div>
-            <div>
-              <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">This Month</p>
-              <p className="text-xl font-bold text-foreground">{monthlyCount ?? 0}</p>
+        <Card className="border-0 shadow-md overflow-hidden">
+          <CardContent className="p-4 relative">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-accent/5 rounded-full -translate-y-4 translate-x-4" />
+            <div className="flex items-center gap-3 relative">
+              <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-accent" />
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">This Month</p>
+                <p className="text-2xl font-extrabold text-foreground leading-none mt-0.5">{monthlyCount ?? 0}<span className="text-sm font-medium text-muted-foreground"> meals</span></p>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Today's Meal Status */}
+      {/* Suggested Features / Quick Actions */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Today's Meals</h3>
-        <div className="grid grid-cols-3 gap-2">
-          {mealSlots.map((meal) => {
-            const isChecked = checkedMeals.includes(meal.type as "breakfast" | "lunch" | "dinner");
-            const menuItem = todayMenu?.find(m => m.meal_type === meal.type);
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Quick Actions</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {quickActions.map((action, i) => {
+            const Icon = action.icon;
             return (
-              <Card key={meal.type} className={`border-0 shadow-sm transition-all ${isChecked ? "ring-2 ring-primary/30 bg-primary/5" : ""}`}>
-                <CardContent className="p-3 text-center space-y-1.5">
-                  <span className="text-2xl">{meal.emoji}</span>
-                  <p className="text-xs font-semibold text-foreground">{meal.label}</p>
-                  {isChecked ? (
-                    <span className="inline-block text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">✓ Done</span>
-                  ) : (
-                    <span className="inline-block text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Pending</span>
-                  )}
-                  {menuItem && menuItem.main_dish !== "Not set" && (
-                    <p className="text-[10px] text-muted-foreground truncate mt-1">{menuItem.main_dish}</p>
-                  )}
-                </CardContent>
-              </Card>
+              <button
+                key={i}
+                onClick={() => {
+                  if (action.tab && onNavigate) {
+                    onNavigate(action.tab);
+                  } else if (!action.tab) {
+                    // Scroll to QR section below
+                    document.getElementById("qr-section")?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="text-left group"
+              >
+                <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-200 hover-scale">
+                  <CardContent className="p-4 flex items-start gap-3">
+                    <div className={`h-10 w-10 rounded-xl ${action.color} flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground leading-tight">{action.label}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{action.desc}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-0.5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                  </CardContent>
+                </Card>
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* QR Code Section */}
+      {/* Today's Meal Status */}
       <div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Today's Meals</h3>
+        <Card className="border-0 shadow-md">
+          <CardContent className="p-3">
+            <div className="grid grid-cols-3 gap-2">
+              {mealSlots.map((meal) => {
+                const isChecked = checkedMeals.includes(meal.type as "breakfast" | "lunch" | "dinner");
+                const menuItem = todayMenu?.find(m => m.meal_type === meal.type);
+                return (
+                  <div
+                    key={meal.type}
+                    className={`text-center p-3 rounded-xl transition-all ${
+                      isChecked
+                        ? "bg-primary/10 ring-1 ring-primary/20"
+                        : "bg-muted/50"
+                    }`}
+                  >
+                    <span className="text-2xl block">{meal.emoji}</span>
+                    <p className="text-xs font-semibold text-foreground mt-1.5">{meal.label}</p>
+                    {isChecked ? (
+                      <span className="inline-block text-[10px] font-bold text-primary mt-1">✓ Done</span>
+                    ) : (
+                      <span className="inline-block text-[10px] font-medium text-muted-foreground mt-1">Pending</span>
+                    )}
+                    {menuItem && menuItem.main_dish !== "Not set" && (
+                      <p className="text-[9px] text-muted-foreground truncate mt-1">{menuItem.main_dish}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* QR Code Section */}
+      <div id="qr-section">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your QR Code</h3>
         <div className="flex justify-center">
           <StudentQRCard />
