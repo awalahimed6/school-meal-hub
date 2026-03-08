@@ -28,6 +28,49 @@ export const GlobalCampusBuddy = () => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Draggable FAB state
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startY: number; startPosX: number; startPosY: number } | null>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const hasMoved = useRef(false);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    hasMoved.current = false;
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startPosX: position.x,
+      startPosY: position.y,
+    };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging || !dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      hasMoved.current = true;
+    }
+    setPosition({
+      x: dragRef.current.startPosX + dx,
+      y: dragRef.current.startPosY + dy,
+    });
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+    dragRef.current = null;
+  };
+
+  const handleFabClick = () => {
+    if (!hasMoved.current) {
+      setIsOpen(!isOpen);
+    }
+  };
+
   useEffect(() => {
     // Find the viewport inside ScrollArea and scroll to bottom
     const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
