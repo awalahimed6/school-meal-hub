@@ -378,6 +378,7 @@ export type Database = {
           dietary_needs: string | null
           full_name: string
           grade: string
+          has_seen_onboarding: boolean
           id: string
           last_checked_announcements: string | null
           last_checked_voice: string | null
@@ -394,6 +395,7 @@ export type Database = {
           dietary_needs?: string | null
           full_name: string
           grade: string
+          has_seen_onboarding?: boolean
           id?: string
           last_checked_announcements?: string | null
           last_checked_voice?: string | null
@@ -410,6 +412,7 @@ export type Database = {
           dietary_needs?: string | null
           full_name?: string
           grade?: string
+          has_seen_onboarding?: boolean
           id?: string
           last_checked_announcements?: string | null
           last_checked_voice?: string | null

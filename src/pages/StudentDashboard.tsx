@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth";
@@ -17,12 +17,14 @@ import { StudentProfileView } from "@/components/student/StudentProfileView";
 import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
 import { useUnreadVoice } from "@/hooks/useUnreadVoice";
 import { SignedAvatar } from "@/components/ui/signed-image";
+import { OnboardingTour } from "@/components/student/OnboardingTour";
 
 type TabType = "home" | "menu" | "history" | "voice" | "profile";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>("home");
   const isViewingVoice = activeTab === "voice";
   const { unreadCount: unreadVoiceCount, markAsRead: markVoiceAsRead } = useUnreadVoice(isViewingVoice);
@@ -32,7 +34,7 @@ const StudentDashboard = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students")
-        .select("full_name, profile_image, grade, student_id, status")
+        .select("full_name, profile_image, grade, student_id, status, has_seen_onboarding")
         .eq("user_id", user?.id)
         .single();
       if (error) throw error;
@@ -40,6 +42,21 @@ const StudentDashboard = () => {
     },
     enabled: !!user,
   });
+
+  const completeOnboarding = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("students")
+        .update({ has_seen_onboarding: true })
+        .eq("user_id", user?.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["student-header", user?.id] });
+    },
+  });
+
+  const showOnboarding = student && !student.has_seen_onboarding;
 
   const handleTabClick = (tabId: TabType) => {
     setActiveTab(tabId);
@@ -217,6 +234,14 @@ const StudentDashboard = () => {
             </div>
           </div>
         </nav>
+
+        {/* Onboarding Tour */}
+        {showOnboarding && (
+          <OnboardingTour
+            studentName={student?.full_name?.split(" ")[0] || "Student"}
+            onComplete={() => completeOnboarding.mutate()}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );
