@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Home, UtensilsCrossed, History, User, Megaphone, ChevronRight } from "lucide-react";
+import { LogOut, Home, UtensilsCrossed, History, User, Megaphone, Sun, Moon, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnnouncementBell } from "@/components/student/AnnouncementBell";
 import { StudentHome } from "@/components/student/StudentHome";
@@ -17,7 +17,6 @@ import { StudentProfileView } from "@/components/student/StudentProfileView";
 import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
 import { useUnreadVoice } from "@/hooks/useUnreadVoice";
 import { SignedAvatar } from "@/components/ui/signed-image";
-import { Badge } from "@/components/ui/badge";
 
 type TabType = "home" | "menu" | "history" | "voice" | "profile";
 
@@ -62,6 +61,13 @@ const StudentDashboard = () => {
     return "Good Evening";
   };
 
+  const getGreetingEmoji = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "☀️";
+    if (hour < 17) return "🌤️";
+    return "🌙";
+  };
+
   const firstName = student?.full_name?.split(" ")[0] || "Student";
   const initials = student?.full_name
     ?.split(" ")
@@ -80,31 +86,20 @@ const StudentDashboard = () => {
   return (
     <ProtectedRoute allowedRoles={["student"]}>
       <div className="min-h-screen bg-background">
-        {/* Premium Header */}
-        <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-2xl border-b border-border/40">
-          <div className="container mx-auto px-4">
-            {/* Main header row */}
-            <div className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-3">
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-br from-primary/40 to-accent/40 rounded-full blur-md opacity-60 group-hover:opacity-100 transition-opacity" />
-                  <SignedAvatar
-                    src={student?.profile_image}
-                    className="h-12 w-12 border-2 border-primary/20 ring-2 ring-primary/10 relative"
-                    fallback={
-                      <span className="text-sm font-bold bg-gradient-to-br from-primary to-secondary text-primary-foreground w-full h-full flex items-center justify-center">
-                        {initials}
-                      </span>
-                    }
-                  />
-                  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-card ring-1 ring-green-500/30" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">{getGreeting()}</p>
-                  <h1 className="text-base font-bold text-foreground leading-tight truncate">{firstName}</h1>
-                </div>
+        {/* Premium Gradient Header */}
+        <header className="sticky top-0 z-40 overflow-hidden">
+          {/* Gradient background layer */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-secondary" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.3),transparent_60%)]" />
+          
+          <div className="relative container mx-auto px-4">
+            {/* Top actions row */}
+            <div className="flex items-center justify-between pt-3 pb-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-primary-foreground/70 text-xs font-medium">
+                  {getGreetingEmoji()} {getGreeting()}
+                </span>
               </div>
-
               <div className="flex items-center gap-0.5">
                 <ThemeToggle />
                 <AnnouncementBell />
@@ -112,39 +107,55 @@ const StudentDashboard = () => {
                   variant="ghost"
                   size="icon"
                   onClick={handleSignOut}
-                  className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  className="rounded-full h-8 w-8 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
                   title="Sign Out"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
 
-            {/* Status strip */}
-            {student && (
-              <div className="flex items-center gap-2 pb-3 -mt-0.5">
-                <Badge variant="outline" className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-primary/5 border-primary/20 text-primary">
-                  ID: {student.student_id}
-                </Badge>
-                <Badge variant="outline" className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-secondary/5 border-secondary/20 text-secondary">
-                  Grade {student.grade}
-                </Badge>
-                <Badge variant="outline" className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
-                  student.status === 'active' 
-                    ? 'bg-green-500/5 border-green-500/20 text-green-600 dark:text-green-400' 
-                    : 'bg-destructive/5 border-destructive/20 text-destructive'
-                }`}>
-                  {student.status === 'active' ? '● Active' : student.status}
-                </Badge>
+            {/* Profile row */}
+            <div className="flex items-center gap-4 pb-4 pt-1">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-primary-foreground/20 rounded-full blur-sm" />
+                <SignedAvatar
+                  src={student?.profile_image}
+                  className="h-14 w-14 border-[2.5px] border-primary-foreground/30 relative"
+                  fallback={
+                    <span className="text-base font-bold bg-primary-foreground/20 text-primary-foreground w-full h-full flex items-center justify-center">
+                      {initials}
+                    </span>
+                  }
+                />
+                <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full bg-green-400 border-2 border-primary" />
               </div>
-            )}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl font-bold text-primary-foreground leading-tight truncate">
+                  {firstName}
+                </h1>
+                {student && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[11px] font-medium text-primary-foreground/60 bg-primary-foreground/10 px-2 py-0.5 rounded-md">
+                      ID: {student.student_id}
+                    </span>
+                    <span className="text-[11px] font-medium text-primary-foreground/60 bg-primary-foreground/10 px-2 py-0.5 rounded-md">
+                      Grade {student.grade}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+
+          {/* Curved bottom edge */}
+          <div className="absolute -bottom-3 left-0 right-0 h-6 bg-background rounded-t-[24px]" />
         </header>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 py-5 pb-32">
+        <main className="container mx-auto px-4 py-2 pb-32">
           <div key={activeTab} className="animate-fade-in">
-            {activeTab === "home" && <StudentHome />}
+            {activeTab === "home" && <StudentHome onNavigate={handleTabClick} />}
             {activeTab === "menu" && <StudentMenuView />}
             {activeTab === "history" && <StudentHistoryView />}
             {activeTab === "voice" && (
