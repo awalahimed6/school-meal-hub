@@ -154,15 +154,20 @@ const StudentDashboard = () => {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-2 pb-32">
-          <div key={activeTab} className="animate-fade-in">
+          <div key={activeTab} className="page-enter">
             {activeTab === "home" && <StudentHome onNavigate={handleTabClick} />}
             {activeTab === "menu" && <StudentMenuView />}
             {activeTab === "history" && <StudentHistoryView />}
             {activeTab === "voice" && (
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold">Community Voice</h2>
-                  <p className="text-muted-foreground text-sm mt-1">See what students are saying about meals</p>
+              <div className="space-y-4 page-enter">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-secondary/20 to-primary/10 flex items-center justify-center">
+                    <Megaphone className="h-5 w-5 text-secondary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">Community Voice</h2>
+                    <p className="text-muted-foreground text-sm">See what students are saying</p>
+                  </div>
                 </div>
                 <StudentVoiceFeed showHeader={false} limit={12} />
               </div>
