@@ -2,9 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StudentQRCard } from "./StudentQRCard";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { UtensilsCrossed, Coffee, Soup, TrendingUp, Calendar, Star, Megaphone, ChevronRight, QrCode, BookOpen } from "lucide-react";
+import { UtensilsCrossed, Coffee, Soup, TrendingUp, Calendar, Star, Megaphone, ChevronRight, QrCode } from "lucide-react";
 
 type TabType = "home" | "menu" | "history" | "voice" | "profile";
 
@@ -19,7 +20,7 @@ export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
   const monthEnd = format(endOfMonth(new Date()), "yyyy-MM-dd");
   const currentDay = format(new Date(), "EEEE");
 
-  const { data: todayMeals } = useQuery({
+  const { data: todayMeals, isLoading: loadingToday } = useQuery({
     queryKey: ["student-today-meals", user?.id, today],
     queryFn: async () => {
       const { data: student } = await supabase
@@ -38,7 +39,7 @@ export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
     enabled: !!user,
   });
 
-  const { data: monthlyCount } = useQuery({
+  const { data: monthlyCount, isLoading: loadingMonth } = useQuery({
     queryKey: ["student-monthly-meals", user?.id, monthStart],
     queryFn: async () => {
       const { data: student } = await supabase
@@ -84,11 +85,37 @@ export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
     { icon: QrCode, label: "My QR Code", desc: "Scan at cafeteria", tab: null, color: "bg-primary/10 text-primary" },
   ];
 
+  const isLoading = loadingToday || loadingMonth;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pb-24">
+        <div className="grid grid-cols-2 gap-3">
+          <Skeleton className="h-[76px] rounded-3xl shimmer" />
+          <Skeleton className="h-[76px] rounded-3xl shimmer" />
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-28 rounded shimmer" />
+          <div className="grid grid-cols-2 gap-3">
+            <Skeleton className="h-[72px] rounded-3xl shimmer" />
+            <Skeleton className="h-[72px] rounded-3xl shimmer" />
+            <Skeleton className="h-[72px] rounded-3xl shimmer" />
+            <Skeleton className="h-[72px] rounded-3xl shimmer" />
+          </div>
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-28 rounded shimmer" />
+          <Skeleton className="h-[120px] rounded-3xl shimmer" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-6 pb-24 page-enter">
       {/* Stats Row */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="border-0 shadow-md overflow-hidden">
+      <div className="grid grid-cols-2 gap-3 stagger-children">
+        <Card className="border-0 shadow-md overflow-hidden card-hover">
           <CardContent className="p-4 relative">
             <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full -translate-y-4 translate-x-4" />
             <div className="flex items-center gap-3 relative">
@@ -102,7 +129,7 @@ export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md overflow-hidden">
+        <Card className="border-0 shadow-md overflow-hidden card-hover">
           <CardContent className="p-4 relative">
             <div className="absolute top-0 right-0 w-16 h-16 bg-accent/5 rounded-full -translate-y-4 translate-x-4" />
             <div className="flex items-center gap-3 relative">
@@ -118,10 +145,10 @@ export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
         </Card>
       </div>
 
-      {/* Suggested Features / Quick Actions */}
+      {/* Quick Actions */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Quick Actions</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 animate-slide-down-fade">Quick Actions</h3>
+        <div className="grid grid-cols-2 gap-3 stagger-children">
           {quickActions.map((action, i) => {
             const Icon = action.icon;
             return (
@@ -131,22 +158,21 @@ export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
                   if (action.tab && onNavigate) {
                     onNavigate(action.tab);
                   } else if (!action.tab) {
-                    // Scroll to QR section below
                     document.getElementById("qr-section")?.scrollIntoView({ behavior: "smooth" });
                   }
                 }}
                 className="text-left group"
               >
-                <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-200 hover-scale">
+                <Card className="border-0 shadow-sm card-hover">
                   <CardContent className="p-4 flex items-start gap-3">
-                    <div className={`h-10 w-10 rounded-xl ${action.color} flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110`}>
+                    <div className={`h-10 w-10 rounded-xl ${action.color} flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground leading-tight">{action.label}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{action.desc}</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-0.5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-0.5 flex-shrink-0 group-hover:translate-x-1 transition-transform duration-300" />
                   </CardContent>
                 </Card>
               </button>
@@ -157,26 +183,30 @@ export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
 
       {/* Today's Meal Status */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Today's Meals</h3>
-        <Card className="border-0 shadow-md">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 animate-slide-down-fade">Today's Meals</h3>
+        <Card className="border-0 shadow-md card-hover">
           <CardContent className="p-3">
             <div className="grid grid-cols-3 gap-2">
-              {mealSlots.map((meal) => {
+              {mealSlots.map((meal, idx) => {
                 const isChecked = checkedMeals.includes(meal.type as "breakfast" | "lunch" | "dinner");
                 const menuItem = todayMenu?.find(m => m.meal_type === meal.type);
                 return (
                   <div
                     key={meal.type}
-                    className={`text-center p-3 rounded-xl transition-all ${
+                    className={`text-center p-3 rounded-xl transition-all duration-300 ${
                       isChecked
-                        ? "bg-primary/10 ring-1 ring-primary/20"
-                        : "bg-muted/50"
+                        ? "bg-primary/10 ring-1 ring-primary/20 scale-[1.02]"
+                        : "bg-muted/50 hover:bg-muted/70"
                     }`}
+                    style={{ animationDelay: `${idx * 80}ms` }}
                   >
                     <span className="text-2xl block">{meal.emoji}</span>
                     <p className="text-xs font-semibold text-foreground mt-1.5">{meal.label}</p>
                     {isChecked ? (
-                      <span className="inline-block text-[10px] font-bold text-primary mt-1">✓ Done</span>
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-primary mt-1">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary animate-scale-in" />
+                        Done
+                      </span>
                     ) : (
                       <span className="inline-block text-[10px] font-medium text-muted-foreground mt-1">Pending</span>
                     )}
@@ -193,7 +223,7 @@ export const StudentHome = ({ onNavigate }: StudentHomeProps) => {
 
       {/* QR Code Section */}
       <div id="qr-section">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your QR Code</h3>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 animate-slide-down-fade">Your QR Code</h3>
         <div className="flex justify-center">
           <StudentQRCard />
         </div>
