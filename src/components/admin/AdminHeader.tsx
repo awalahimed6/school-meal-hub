@@ -6,7 +6,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Key, LogOut, CalendarDays, Search } from "lucide-react";
+import { Key, LogOut, CalendarDays, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { format } from "date-fns";
 import type { AdminSection } from "./AdminSidebar";
 
