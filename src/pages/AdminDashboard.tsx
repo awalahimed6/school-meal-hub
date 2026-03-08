@@ -211,7 +211,7 @@ const AdminDashboard = () => {
           </nav>
 
           {/* Collapse */}
-          <div className="border-t border-sidebar-border p-2">
+          <div className="border-t border-[hsl(42_60%_45%/0.2)] p-2">
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground transition-all text-xs"
