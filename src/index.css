@@ -43,14 +43,14 @@ All colors MUST be HSL.
     --warning-foreground: 215 25% 15%;
     
     /* Sidebar */
-    /* Sidebar: Green & Professional */
-    --sidebar-background: 152 28% 30%;
+    /* Sidebar: Gray & Professional */
+    --sidebar-background: 220 14% 28%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 152 25% 38%;
+    --sidebar-accent: 220 12% 36%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 152 22% 25%;
+    --sidebar-border: 220 12% 23%;
     --sidebar-ring: 24 95% 53%;
     
     /* Custom gradient colors */
