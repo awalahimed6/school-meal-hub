@@ -63,6 +63,22 @@ export const GlobalCampusBuddy = () => {
   const handlePointerUp = () => {
     setIsDragging(false);
     dragRef.current = null;
+
+    // Snap to nearest horizontal edge
+    if (fabRef.current) {
+      const rect = fabRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const screenW = window.innerWidth;
+      const baseBottom = isStudentDashboard ? 112 : 24;
+
+      if (centerX < screenW / 2) {
+        // Snap to left edge
+        setPosition({ x: -(screenW - 24 - rect.width - 24), y: position.y });
+      } else {
+        // Snap to right edge (reset x to 0)
+        setPosition({ x: 0, y: position.y });
+      }
+    }
   };
 
   const handleFabClick = () => {
@@ -153,8 +169,8 @@ export const GlobalCampusBuddy = () => {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onClick={handleFabClick}
-        className={`fixed z-50 h-14 w-14 rounded-full shadow-2xl transition-shadow duration-300 bg-gradient-to-r from-primary to-orange-600 touch-none select-none ${
-          isDragging ? "scale-110 shadow-3xl cursor-grabbing" : "hover:scale-110 cursor-grab"
+        className={`fixed z-50 h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-primary to-orange-600 touch-none select-none ${
+          isDragging ? "scale-110 shadow-3xl cursor-grabbing" : "hover:scale-110 cursor-grab transition-all duration-300"
         }`}
         style={{
           right: `${24 - position.x}px`,
