@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   Home, UtensilsCrossed, History, Megaphone, User, 
@@ -72,22 +72,49 @@ const steps = [
 export const OnboardingTour = ({ studentName, onComplete }: OnboardingTourProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiPieces, setConfettiPieces] = useState<Array<{ id: number; x: number; delay: number; color: string; size: number; rotation: number }>>([]);
 
   const step = steps[currentStep];
   const isFirst = currentStep === 0;
   const isLast = currentStep === steps.length - 1;
   const StepIcon = step.icon;
 
+  const launchConfetti = useCallback(() => {
+    const colors = [
+      'hsl(var(--primary))',
+      'hsl(var(--accent))',
+      'hsl(var(--secondary))',
+      'hsl(var(--destructive))',
+      '#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+    ];
+    const pieces = Array.from({ length: 60 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      delay: Math.random() * 0.5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 8 + 4,
+      rotation: Math.random() * 360,
+    }));
+    setConfettiPieces(pieces);
+    setShowConfetti(true);
+  }, []);
+
   const handleNext = () => {
     if (isLast) {
-      handleClose();
+      launchConfetti();
+      setTimeout(() => {
+        setIsExiting(true);
+        setTimeout(() => onComplete(), 300);
+      }, 1800);
     } else {
       setCurrentStep((s) => s + 1);
     }
   };
 
   const handleSkip = () => {
-    handleClose();
+    setIsExiting(true);
+    setTimeout(() => onComplete(), 300);
   };
 
   const handleClose = () => {
@@ -103,6 +130,36 @@ export const OnboardingTour = ({ studentName, onComplete }: OnboardingTourProps)
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm" onClick={handleSkip} />
+
+      {/* Confetti */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-[101] overflow-hidden">
+          {confettiPieces.map((piece) => (
+            <div
+              key={piece.id}
+              className="absolute top-0"
+              style={{
+                left: `${piece.x}%`,
+                width: piece.size,
+                height: piece.size * 1.4,
+                backgroundColor: piece.color,
+                borderRadius: piece.size > 8 ? '50%' : '2px',
+                animation: `confetti-fall ${2 + Math.random()}s ease-in forwards`,
+                animationDelay: `${piece.delay}s`,
+                transform: `rotate(${piece.rotation}deg)`,
+                opacity: 0,
+              }}
+            />
+          ))}
+          <style>{`
+            @keyframes confetti-fall {
+              0% { opacity: 1; transform: translateY(-10px) rotate(0deg) scale(1); }
+              50% { opacity: 1; }
+              100% { opacity: 0; transform: translateY(100vh) rotate(720deg) scale(0.5); }
+            }
+          `}</style>
+        </div>
+      )}
 
       {/* Card */}
       <div
