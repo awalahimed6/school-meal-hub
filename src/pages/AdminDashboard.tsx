@@ -167,13 +167,13 @@ const AdminDashboard = () => {
           }`}
         >
           {/* Logo */}
-          <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border shrink-0">
-            <div className="h-9 w-9 rounded-xl bg-sidebar-primary/20 flex items-center justify-center shrink-0">
-              <GraduationCap className="h-5 w-5 text-sidebar-primary" />
+          <div className="flex items-center gap-3 px-4 h-16 border-b border-[hsl(42_60%_45%/0.2)] shrink-0">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[hsl(42_90%_55%)] to-[hsl(24_95%_53%)] flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(200,170,60,0.3)]">
+              <GraduationCap className="h-5 w-5 text-white" />
             </div>
             {!sidebarCollapsed && (
               <div className="overflow-hidden">
-                <p className="text-sm font-bold leading-tight truncate tracking-tight">Ifa Boru</p>
+                <p className="text-sm font-bold leading-tight truncate tracking-tight bg-gradient-to-r from-[hsl(42_90%_70%)] to-[hsl(42_80%_55%)] bg-clip-text text-transparent">Ifa Boru</p>
                 <p className="text-[10px] text-sidebar-foreground/50 truncate">Admin Console</p>
               </div>
             )}
