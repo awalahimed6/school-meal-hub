@@ -24,6 +24,7 @@ type TabType = "home" | "menu" | "history" | "voice" | "profile";
 const StudentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>("home");
   const isViewingVoice = activeTab === "voice";
   const { unreadCount: unreadVoiceCount, markAsRead: markVoiceAsRead } = useUnreadVoice(isViewingVoice);
@@ -33,13 +34,29 @@ const StudentDashboard = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students")
-        .select("full_name, profile_image, grade, student_id, status")
+        .select("full_name, profile_image, grade, student_id, status, has_seen_onboarding")
         .eq("user_id", user?.id)
         .single();
       if (error) throw error;
       return data;
     },
     enabled: !!user,
+  });
+
+  const completeOnboarding = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("students")
+        .update({ has_seen_onboarding: true })
+        .eq("user_id", user?.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["student-header", user?.id] });
+    },
+  });
+
+  const showOnboarding = student && !student.has_seen_onboarding;
   });
 
   const handleTabClick = (tabId: TabType) => {
