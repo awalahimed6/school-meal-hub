@@ -32,15 +32,29 @@ interface AdminHeaderProps {
 
 export { sectionTitles };
 
-export const AdminHeader = ({ activeSection, userEmail, onPasswordChange, onSignOut }: AdminHeaderProps) => {
+export const AdminHeader = ({ activeSection, userEmail, onPasswordChange, onSignOut, sidebarCollapsed, onToggleSidebar }: AdminHeaderProps) => {
   const current = sectionTitles[activeSection];
   const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
   const today = new Date();
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between gap-4 px-6 h-[68px] bg-background/70 backdrop-blur-2xl border-b border-border/40">
-      {/* Left: Title + Breadcrumb */}
-      <div className="flex flex-col min-w-0">
+      {/* Left: Toggle + Title */}
+      <div className="flex items-center gap-3 min-w-0">
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200"
+            aria-label="Toggle sidebar"
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
+          </button>
+        )}
+        <div className="flex flex-col min-w-0">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-bold text-foreground leading-tight truncate">{current.title}</h1>
         </div>
