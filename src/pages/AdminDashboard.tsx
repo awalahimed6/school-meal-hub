@@ -162,10 +162,9 @@ const AdminDashboard = () => {
       <div className="min-h-screen bg-background flex">
         {/* ── Sidebar ── */}
         <aside
-          className={`fixed top-0 left-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-sidebar-border shadow-[2px_0_12px_-2px_rgba(0,0,0,0.06)] dark:shadow-none ${
+          className={`fixed top-0 left-0 z-40 h-screen text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-sidebar-border shadow-[2px_0_15px_-3px_rgba(0,0,0,0.08)] dark:shadow-none bg-gradient-to-b from-[hsl(220_18%_97%)] via-[hsl(220_15%_95%)] to-[hsl(220_13%_91%)] dark:bg-sidebar dark:from-sidebar dark:via-sidebar dark:to-sidebar ${
             sidebarCollapsed ? "w-[68px]" : "w-60"
           }`}
-          style={{ backgroundImage: 'linear-gradient(180deg, hsl(220 16% 98%) 0%, hsl(220 14% 93%) 100%)' }}
         >
           {/* Logo */}
           <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border shrink-0">
