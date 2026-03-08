@@ -107,7 +107,7 @@ export const StudentHome = () => {
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Today's Meals</h3>
         <div className="grid grid-cols-3 gap-2">
           {mealSlots.map((meal) => {
-            const isChecked = checkedMeals.includes(meal.type);
+            const isChecked = checkedMeals.includes(meal.type as "breakfast" | "lunch" | "dinner");
             const menuItem = todayMenu?.find(m => m.meal_type === meal.type);
             return (
               <Card key={meal.type} className={`border-0 shadow-sm transition-all ${isChecked ? "ring-2 ring-primary/30 bg-primary/5" : ""}`}>
