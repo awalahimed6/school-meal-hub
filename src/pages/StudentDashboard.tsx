@@ -17,6 +17,7 @@ import { StudentProfileView } from "@/components/student/StudentProfileView";
 import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
 import { useUnreadVoice } from "@/hooks/useUnreadVoice";
 import { SignedAvatar } from "@/components/ui/signed-image";
+import { OnboardingTour } from "@/components/student/OnboardingTour";
 
 type TabType = "home" | "menu" | "history" | "voice" | "profile";
 
