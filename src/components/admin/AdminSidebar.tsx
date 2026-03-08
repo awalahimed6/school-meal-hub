@@ -3,6 +3,7 @@ import {
   Home, ImageIcon, HelpCircle,
   GraduationCap, Sparkles, PanelLeftOpen,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
