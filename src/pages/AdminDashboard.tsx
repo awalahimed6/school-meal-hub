@@ -162,7 +162,7 @@ const AdminDashboard = () => {
       <div className="min-h-screen bg-background flex">
         {/* ── Sidebar ── */}
         <aside
-          className={`fixed top-0 left-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-sidebar-border ${
+          className={`fixed top-0 left-0 z-40 h-screen bg-gradient-to-b from-[hsl(220_14%_32%)] via-[hsl(220_14%_28%)] to-[hsl(220_14%_24%)] text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-[hsl(42_60%_45%/0.25)] shadow-[2px_0_20px_-4px_rgba(200,170,80,0.15)] ${
             sidebarCollapsed ? "w-[68px]" : "w-60"
           }`}
         >
