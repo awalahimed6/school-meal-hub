@@ -55,10 +55,11 @@ export const AdminHeader = ({ activeSection, userEmail, onPasswordChange, onSign
           </button>
         )}
         <div className="flex flex-col min-w-0">
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold text-foreground leading-tight truncate">{current.title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-foreground leading-tight truncate">{current.title}</h1>
+          </div>
+          <p className="text-xs text-muted-foreground truncate max-w-md">{current.subtitle}</p>
         </div>
-        <p className="text-xs text-muted-foreground truncate max-w-md">{current.subtitle}</p>
       </div>
 
       {/* Right: Actions */}
