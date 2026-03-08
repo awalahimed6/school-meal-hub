@@ -72,22 +72,49 @@ const steps = [
 export const OnboardingTour = ({ studentName, onComplete }: OnboardingTourProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiPieces, setConfettiPieces] = useState<Array<{ id: number; x: number; delay: number; color: string; size: number; rotation: number }>>([]);
 
   const step = steps[currentStep];
   const isFirst = currentStep === 0;
   const isLast = currentStep === steps.length - 1;
   const StepIcon = step.icon;
 
+  const launchConfetti = useCallback(() => {
+    const colors = [
+      'hsl(var(--primary))',
+      'hsl(var(--accent))',
+      'hsl(var(--secondary))',
+      'hsl(var(--destructive))',
+      '#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+    ];
+    const pieces = Array.from({ length: 60 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      delay: Math.random() * 0.5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 8 + 4,
+      rotation: Math.random() * 360,
+    }));
+    setConfettiPieces(pieces);
+    setShowConfetti(true);
+  }, []);
+
   const handleNext = () => {
     if (isLast) {
-      handleClose();
+      launchConfetti();
+      setTimeout(() => {
+        setIsExiting(true);
+        setTimeout(() => onComplete(), 300);
+      }, 1800);
     } else {
       setCurrentStep((s) => s + 1);
     }
   };
 
   const handleSkip = () => {
-    handleClose();
+    setIsExiting(true);
+    setTimeout(() => onComplete(), 300);
   };
 
   const handleClose = () => {
