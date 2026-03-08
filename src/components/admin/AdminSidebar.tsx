@@ -1,7 +1,7 @@
 import { 
   Users, UserCog, BarChart3, UtensilsCrossed, Clock,
-  Home, ImageIcon, HelpCircle, ChevronLeft, ChevronRight,
-  GraduationCap, Sparkles, PanelLeftClose, PanelLeftOpen,
+  Home, ImageIcon, HelpCircle,
+  GraduationCap, Sparkles, PanelLeftOpen,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
