@@ -9,9 +9,8 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Users, UserCog, BarChart3, LogOut, UtensilsCrossed, Clock,
-  Home, Key, ImageIcon, HelpCircle, ChevronLeft, ChevronRight,
-  GraduationCap, TrendingUp, Activity, ArrowUpRight,
+  Users, UserCog, BarChart3, UtensilsCrossed,
+  GraduationCap, Activity, ArrowUpRight,
 } from "lucide-react";
 import { StudentManagement } from "@/components/admin/StudentManagement";
 import { StaffManagement } from "@/components/admin/StaffManagement";
@@ -20,59 +19,15 @@ import { MenuManager } from "@/components/admin/MenuManager";
 import { MealScheduleManager } from "@/components/admin/MealScheduleManager";
 import { GalleryManager } from "@/components/admin/GalleryManager";
 import { KnowledgeBaseManager } from "@/components/admin/KnowledgeBaseManager";
-import { AdminFeedbackBell } from "@/components/admin/AdminFeedbackBell";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { AdminSidebar, sidebarItems } from "@/components/admin/AdminSidebar";
+import { AdminHeader } from "@/components/admin/AdminHeader";
+import type { AdminSection } from "@/components/admin/AdminSidebar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
-
-type AdminSection =
-  | "dashboard"
-  | "students"
-  | "staff"
-  | "menu"
-  | "schedules"
-  | "gallery"
-  | "knowledge"
-  | "reports";
-
-const sidebarItems: { key: AdminSection; label: string; icon: React.ElementType; description: string }[] = [
-  { key: "dashboard", label: "Overview", icon: Home, description: "Dashboard home" },
-  { key: "students", label: "Students", icon: Users, description: "Manage students" },
-  { key: "staff", label: "Staff", icon: UserCog, description: "Manage staff" },
-  { key: "menu", label: "Menu", icon: UtensilsCrossed, description: "Weekly menus" },
-  { key: "schedules", label: "Schedules", icon: Clock, description: "Meal times" },
-  { key: "gallery", label: "Gallery", icon: ImageIcon, description: "Photos & video" },
-  { key: "knowledge", label: "FAQs", icon: HelpCircle, description: "Knowledge base" },
-  { key: "reports", label: "Reports", icon: BarChart3, description: "Analytics" },
-];
-
-const sectionTitles: Record<AdminSection, { title: string; subtitle: string }> = {
-  dashboard: { title: "Dashboard Overview", subtitle: "Welcome back, here's what's happening today" },
-  students: { title: "Student Management", subtitle: "Add, update, delete, and view student records" },
-  staff: { title: "Staff Management", subtitle: "Manage cafeteria staff members and their access" },
-  menu: { title: "Menu Manager", subtitle: "Manage weekly menu items for breakfast, lunch, and dinner" },
-  schedules: { title: "Meal Schedules", subtitle: "Set serving times for breakfast, lunch, and dinner" },
-  gallery: { title: "Campus Gallery", subtitle: "Upload campus photos and the meal system demo video" },
-  knowledge: { title: "Knowledge Base", subtitle: "Manage FAQs for the chatbot and Telegram bot" },
-  reports: { title: "Reports & Analytics", subtitle: "View comprehensive meal tracking data and analytics" },
-};
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -146,140 +101,36 @@ const AdminDashboard = () => {
     }
   };
 
-  const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
-
   const statCards = [
-    { label: "Total Students", value: totalStudents, icon: GraduationCap, color: "text-secondary", bg: "bg-secondary/10", border: "border-secondary/20" },
-    { label: "Meals Today", value: mealsToday, icon: UtensilsCrossed, color: "text-[hsl(var(--success))]", bg: "bg-[hsl(var(--success))]/10", border: "border-[hsl(var(--success))]/20" },
-    { label: "Staff Members", value: totalStaff, icon: UserCog, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-    { label: "Feedback Today", value: pendingFeedback, icon: BarChart3, color: "text-accent", bg: "bg-accent/10", border: "border-accent/20" },
+    { label: "Total Students", value: totalStudents, icon: GraduationCap, gradient: "from-secondary to-secondary/80", glow: "shadow-secondary/20" },
+    { label: "Meals Today", value: mealsToday, icon: UtensilsCrossed, gradient: "from-[hsl(var(--success))] to-[hsl(142_60%_35%)]", glow: "shadow-[hsl(var(--success))]/20" },
+    { label: "Staff Members", value: totalStaff, icon: UserCog, gradient: "from-primary to-primary/80", glow: "shadow-primary/20" },
+    { label: "Feedback Today", value: pendingFeedback, icon: BarChart3, gradient: "from-accent to-[hsl(42_80%_45%)]", glow: "shadow-accent/20" },
   ];
-
-  const currentSection = sectionTitles[activeSection];
 
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
       <div className="min-h-screen bg-background flex">
-        {/* ── Sidebar ── */}
-        <aside
-          className={`fixed top-0 left-0 z-40 h-screen bg-gradient-to-b from-[hsl(220_14%_32%)] via-[hsl(220_14%_28%)] to-[hsl(220_14%_24%)] text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-[hsl(42_60%_45%/0.25)] shadow-[2px_0_20px_-4px_rgba(200,170,80,0.15)] ${
-            sidebarCollapsed ? "w-[68px]" : "w-60"
-          }`}
-        >
-          {/* Logo */}
-          <div className="flex items-center gap-3 px-4 h-16 border-b border-[hsl(42_60%_45%/0.2)] shrink-0">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[hsl(42_90%_55%)] to-[hsl(24_95%_53%)] flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(200,170,60,0.3)]">
-              <GraduationCap className="h-5 w-5 text-white" />
-            </div>
-            {!sidebarCollapsed && (
-              <div className="overflow-hidden">
-                <p className="text-sm font-bold leading-tight truncate tracking-tight bg-gradient-to-r from-[hsl(42_90%_70%)] to-[hsl(42_80%_55%)] bg-clip-text text-transparent">Ifa Boru</p>
-                <p className="text-[10px] text-sidebar-foreground/50 truncate">Admin Console</p>
-              </div>
-            )}
-          </div>
+        {/* Sidebar */}
+        <AdminSidebar
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
 
-          {/* Navigation */}
-          <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-            {!sidebarCollapsed && (
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 px-3 mb-2">
-                Navigation
-              </p>
-            )}
-            {sidebarItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeSection === item.key;
-              return (
-                <button
-                  key={item.key}
-                  onClick={() => setActiveSection(item.key)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative ${
-                    isActive
-                      ? "bg-gradient-to-r from-[hsl(42_90%_55%)] to-[hsl(24_95%_53%)] text-white shadow-lg shadow-[hsl(42_80%_50%/0.3)]"
-                      : "text-sidebar-foreground/60 hover:bg-white/8 hover:text-sidebar-foreground"
-                  }`}
-                  title={sidebarCollapsed ? item.label : undefined}
-                >
-                  <Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? "" : "group-hover:scale-110 transition-transform"}`} />
-                  {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
-                  {isActive && !sidebarCollapsed && (
-                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary-foreground/80" />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* Collapse */}
-          <div className="border-t border-[hsl(42_60%_45%/0.2)] p-2">
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground transition-all text-xs"
-            >
-              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : (
-                <>
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>Collapse</span>
-                </>
-              )}
-            </button>
-          </div>
-        </aside>
-
-        {/* ── Main Content ── */}
-        <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? "ml-[68px]" : "ml-60"}`}>
-          {/* Top Bar */}
-          <header className="sticky top-0 z-30 h-16 flex items-center justify-between px-6 bg-background/80 backdrop-blur-xl border-b border-border/50">
-            <div>
-              <h1 className="text-base font-bold text-foreground leading-tight">{currentSection.title}</h1>
-              <p className="text-xs text-muted-foreground">{currentSection.subtitle}</p>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <ThemeToggle />
-              <AdminFeedbackBell />
-              
-              <div className="w-px h-6 bg-border mx-1.5" />
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2.5 h-10 px-2.5 rounded-xl">
-                    <div className="hidden sm:block text-right">
-                      <p className="text-xs font-semibold leading-tight">Administrator</p>
-                      <p className="text-[10px] text-muted-foreground leading-tight max-w-[140px] truncate">{user?.email}</p>
-                    </div>
-                    <Avatar className="h-8 w-8 border-2 border-primary/20">
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-                        {user?.email ? getInitials(user.email) : "AD"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-semibold leading-none">Administrator</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setShowPasswordDialog(true)}>
-                    <Key className="mr-2 h-4 w-4" />
-                    Change Password
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </header>
+        {/* Main */}
+        <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? "ml-[72px]" : "ml-64"}`}>
+          <AdminHeader
+            activeSection={activeSection}
+            userEmail={user?.email}
+            onPasswordChange={() => setShowPasswordDialog(true)}
+            onSignOut={handleSignOut}
+          />
 
           {/* Password Dialog */}
           <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-            <DialogContent>
+            <DialogContent className="rounded-2xl">
               <DialogHeader>
                 <DialogTitle>Change Password</DialogTitle>
                 <DialogDescription>Enter your new password below. Minimum 6 characters.</DialogDescription>
@@ -300,30 +151,40 @@ const AdminDashboard = () => {
             </DialogContent>
           </Dialog>
 
-          {/* ── Page Content ── */}
+          {/* Page Content */}
           <main className="p-6">
             <div key={activeSection} className="animate-fade-in">
               {activeSection === "dashboard" && (
                 <div className="space-y-8">
+                  {/* Greeting */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
+                        Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"} 👋
+                      </h2>
+                      <p className="text-sm text-muted-foreground mt-0.5">Here's an overview of your school today</p>
+                    </div>
+                  </div>
+
                   {/* Stat Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     {statCards.map((stat) => {
                       const Icon = stat.icon;
                       return (
-                        <Card key={stat.label} className={`relative overflow-hidden border ${stat.border} bg-card hover:shadow-lg transition-all duration-300 group`}>
+                        <Card key={stat.label} className={`relative overflow-hidden border-0 bg-card hover:shadow-xl ${stat.glow} transition-all duration-300 group rounded-2xl`}>
                           <CardContent className="p-5">
                             <div className="flex items-start justify-between">
-                              <div className="space-y-2">
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-                                <p className="text-3xl font-extrabold text-foreground tracking-tight">{stat.value}</p>
+                              <div className="space-y-3">
+                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">{stat.label}</p>
+                                <p className="text-4xl font-black text-foreground tracking-tighter">{stat.value}</p>
                               </div>
-                              <div className={`h-11 w-11 rounded-2xl ${stat.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                                <Icon className={`h-5 w-5 ${stat.color}`} />
+                              <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg ${stat.glow}`}>
+                                <Icon className="h-5 w-5 text-white" />
                               </div>
                             </div>
-                            {/* Decorative bar */}
-                            <div className={`absolute bottom-0 left-0 right-0 h-1 ${stat.bg}`} />
                           </CardContent>
+                          {/* Bottom gradient bar */}
+                          <div className={`h-1 bg-gradient-to-r ${stat.gradient}`} />
                         </Card>
                       );
                     })}
@@ -331,9 +192,14 @@ const AdminDashboard = () => {
 
                   {/* Quick Access */}
                   <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Activity className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Quick Access</h3>
+                    <div className="flex items-center gap-2 mb-5">
+                      <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                        <Activity className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground">Quick Access</h3>
+                        <p className="text-[11px] text-muted-foreground">Jump to any section</p>
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                       {sidebarItems.filter((i) => i.key !== "dashboard").map((item) => {
@@ -342,16 +208,15 @@ const AdminDashboard = () => {
                           <button
                             key={item.key}
                             onClick={() => setActiveSection(item.key)}
-                            className="group flex items-center gap-3.5 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-md transition-all duration-200 text-left"
+                            className="group flex items-center gap-3.5 p-4 rounded-2xl bg-card border border-border/40 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 text-left"
                           >
-                            <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center group-hover:bg-primary/15 transition-colors shrink-0">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center group-hover:from-primary/20 group-hover:to-accent/20 transition-colors shrink-0">
                               <Icon className="h-5 w-5 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                              <p className="text-[11px] text-muted-foreground truncate">{item.description}</p>
+                              <p className="text-sm font-bold text-foreground">{item.label}</p>
                             </div>
-                            <ArrowUpRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                            <ArrowUpRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                           </button>
                         );
                       })}
