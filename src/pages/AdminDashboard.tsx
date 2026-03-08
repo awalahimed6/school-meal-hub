@@ -126,6 +126,8 @@ const AdminDashboard = () => {
             userEmail={user?.email}
             onPasswordChange={() => setShowPasswordDialog(true)}
             onSignOut={handleSignOut}
+            sidebarCollapsed={sidebarCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           />
 
           {/* Password Dialog */}

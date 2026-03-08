@@ -1,7 +1,7 @@
 import { 
   Users, UserCog, BarChart3, UtensilsCrossed, Clock,
-  Home, ImageIcon, HelpCircle, ChevronLeft, ChevronRight,
-  GraduationCap, Sparkles, PanelLeftClose, PanelLeftOpen,
+  Home, ImageIcon, HelpCircle,
+  GraduationCap, Sparkles, PanelLeftOpen,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -117,24 +117,6 @@ const SidebarInner = ({ activeSection, onSectionChange, collapsed, onToggleColla
       {/* ─── Bottom Section ─── */}
       <div className="relative px-2.5 pb-4 pt-2">
         <div className="mx-1 mb-3 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        
-        {!isMobile && (
-          <button
-            onClick={onToggleCollapse}
-            className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl text-white/30 hover:bg-white/[0.06] hover:text-white/70 transition-all duration-200 text-xs font-medium group"
-          >
-            <div className="relative">
-              {collapsed ? (
-                <PanelLeftOpen className="h-[18px] w-[18px] transition-transform duration-300 group-hover:scale-110" />
-              ) : (
-                <PanelLeftClose className="h-[18px] w-[18px] transition-transform duration-300 group-hover:scale-110" />
-              )}
-            </div>
-            <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100"}`}>
-              Collapse
-            </span>
-          </button>
-        )}
       </div>
     </div>
   );
