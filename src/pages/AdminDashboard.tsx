@@ -162,18 +162,18 @@ const AdminDashboard = () => {
       <div className="min-h-screen bg-background flex">
         {/* ── Sidebar ── */}
         <aside
-          className={`fixed top-0 left-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-sidebar-border ${
+          className={`fixed top-0 left-0 z-40 h-screen bg-gradient-to-b from-[hsl(220_14%_32%)] via-[hsl(220_14%_28%)] to-[hsl(220_14%_24%)] text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-[hsl(42_60%_45%/0.25)] shadow-[2px_0_20px_-4px_rgba(200,170,80,0.15)] ${
             sidebarCollapsed ? "w-[68px]" : "w-60"
           }`}
         >
           {/* Logo */}
-          <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border shrink-0">
-            <div className="h-9 w-9 rounded-xl bg-sidebar-primary/20 flex items-center justify-center shrink-0">
-              <GraduationCap className="h-5 w-5 text-sidebar-primary" />
+          <div className="flex items-center gap-3 px-4 h-16 border-b border-[hsl(42_60%_45%/0.2)] shrink-0">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[hsl(42_90%_55%)] to-[hsl(24_95%_53%)] flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(200,170,60,0.3)]">
+              <GraduationCap className="h-5 w-5 text-white" />
             </div>
             {!sidebarCollapsed && (
               <div className="overflow-hidden">
-                <p className="text-sm font-bold leading-tight truncate tracking-tight">Ifa Boru</p>
+                <p className="text-sm font-bold leading-tight truncate tracking-tight bg-gradient-to-r from-[hsl(42_90%_70%)] to-[hsl(42_80%_55%)] bg-clip-text text-transparent">Ifa Boru</p>
                 <p className="text-[10px] text-sidebar-foreground/50 truncate">Admin Console</p>
               </div>
             )}
@@ -195,8 +195,8 @@ const AdminDashboard = () => {
                   onClick={() => setActiveSection(item.key)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative ${
                     isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/30"
-                      : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
+                      ? "bg-gradient-to-r from-[hsl(42_90%_55%)] to-[hsl(24_95%_53%)] text-white shadow-lg shadow-[hsl(42_80%_50%/0.3)]"
+                      : "text-sidebar-foreground/60 hover:bg-white/8 hover:text-sidebar-foreground"
                   }`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
@@ -211,7 +211,7 @@ const AdminDashboard = () => {
           </nav>
 
           {/* Collapse */}
-          <div className="border-t border-sidebar-border p-2">
+          <div className="border-t border-[hsl(42_60%_45%/0.2)] p-2">
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground transition-all text-xs"
