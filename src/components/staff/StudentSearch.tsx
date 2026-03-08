@@ -52,12 +52,12 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
     queryFn: async () => {
       if (!searchQuery.trim()) return [];
 
-      const query = searchQuery.trim().toUpperCase();
+      const query = searchQuery.trim();
       
       const { data, error } = await supabase
         .from("students")
         .select("*")
-        .or(`student_id.ilike.%${query}%,full_name.ilike.%${query}%`)
+        .ilike("student_id", `%${query}%`)
         .limit(10);
 
       if (error) throw error;
@@ -192,7 +192,7 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="student-search"
-            placeholder="Search by student ID or name..."
+            placeholder="Search by student ID..."
             value={searchQuery}
             onChange={(e) => handleSearchQueryChange(e.target.value)}
             className="pl-9"
