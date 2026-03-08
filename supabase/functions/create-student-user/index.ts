@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -170,34 +170,48 @@ serve(async (req) => {
 
       console.log("Student user created successfully:", { userId, studentId, email });
 
-      // Send email with credentials
+      // Send welcome email with credentials via Brevo
       try {
-        const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-        const appUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://your-app-url.com';
+        const brevoApiKey = Deno.env.get("BREVO_API_KEY");
+        const appUrl = "https://school-snap-meal.lovable.app";
         
-        await resend.emails.send({
-          from: "School Meal Hub <noreply@school-snap-meal.lovable.app>",
-          to: [email],
-          subject: "Welcome to School Meal Hub - Login Credentials",
-          html: `
-            <h1>Welcome to School Meal Hub</h1>
-            <p>Hello ${fullName},</p>
-            <p>Your student account has been created successfully!</p>
-            <br>
-            <p><strong>Login Details:</strong></p>
-            <p>Email: ${email}</p>
-            <p>Temporary Password: <strong>${generatedPassword}</strong></p>
-            <br>
-            <p>Please log in at: <a href="${appUrl}">${appUrl}</a></p>
-            <p>We recommend changing your password after your first login.</p>
-            <br>
-            <p>Best regards,<br>School Meal Hub Team</p>
-          `,
+        const emailRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api-key": brevoApiKey!,
+          },
+          body: JSON.stringify({
+            sender: { name: "School Meal Hub", email: "noreply@school-snap-meal.lovable.app" },
+            to: [{ email, name: fullName }],
+            subject: "Welcome to School Meal Hub - Your Login Credentials",
+            htmlContent: `
+              <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;border-radius:12px;">
+                <h1 style="color:#1a1a2e;font-size:24px;">Welcome to School Meal Hub 🎓</h1>
+                <p style="color:#333;">Hello <strong>${fullName}</strong>,</p>
+                <p style="color:#333;">Your student account has been created successfully! Here are your login credentials:</p>
+                <div style="background:#f4f4f8;border-radius:8px;padding:16px;margin:16px 0;">
+                  <p style="margin:4px 0;color:#333;"><strong>Email:</strong> ${email}</p>
+                  <p style="margin:4px 0;color:#333;"><strong>Temporary Password:</strong> <code style="background:#e8e8f0;padding:2px 8px;border-radius:4px;">${generatedPassword}</code></p>
+                </div>
+                <a href="${appUrl}" style="display:inline-block;background:#1a1a2e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:8px 0;">Log In Now</a>
+                <p style="color:#666;font-size:13px;margin-top:16px;">We recommend changing your password after your first login.</p>
+                <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
+                <p style="color:#999;font-size:12px;">School Meal Hub Team</p>
+              </div>
+            `,
+          }),
         });
-        
-        console.log("Credentials email sent successfully to:", email);
+
+        if (!emailRes.ok) {
+          const errBody = await emailRes.text();
+          console.error("Brevo email error:", errBody);
+        } else {
+          console.log("Welcome email sent successfully to:", email);
+        }
       } catch (emailError) {
-        console.error("Error sending credentials email:", emailError);
+        console.error("Error sending welcome email:", emailError);
         // Don't fail the entire operation if email fails
       }
 
