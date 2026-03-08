@@ -173,7 +173,7 @@ serve(async (req) => {
       // Send welcome email with credentials via Brevo
       try {
         const brevoApiKey = Deno.env.get("BREVO_API_KEY");
-        const appUrl = "https://school-snap-meal.lovable.app";
+        const appUrl = "https://nibsbss-school-meal.vercel.app";
         
         const emailRes = await fetch("https://api.brevo.com/v3/smtp/email", {
           method: "POST",
