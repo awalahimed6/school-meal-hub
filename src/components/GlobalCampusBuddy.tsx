@@ -63,6 +63,22 @@ export const GlobalCampusBuddy = () => {
   const handlePointerUp = () => {
     setIsDragging(false);
     dragRef.current = null;
+
+    // Snap to nearest horizontal edge
+    if (fabRef.current) {
+      const rect = fabRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const screenW = window.innerWidth;
+      const baseBottom = isStudentDashboard ? 112 : 24;
+
+      if (centerX < screenW / 2) {
+        // Snap to left edge
+        setPosition({ x: -(screenW - 24 - rect.width - 24), y: position.y });
+      } else {
+        // Snap to right edge (reset x to 0)
+        setPosition({ x: 0, y: position.y });
+      }
+    }
   };
 
   const handleFabClick = () => {
