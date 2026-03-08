@@ -220,8 +220,8 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
                       />
                       <div className="flex-1">
                         <p className="font-medium">{student.full_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {student.student_id} • {student.grade}
+                        <p className="text-sm text-muted-foreground font-mono">
+                          {student.student_id}
                         </p>
                       </div>
                       <Badge
