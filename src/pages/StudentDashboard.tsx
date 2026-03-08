@@ -143,19 +143,21 @@ const StudentDashboard = () => {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-5 pb-32">
-          {activeTab === "home" && <StudentHome />}
-          {activeTab === "menu" && <StudentMenuView />}
-          {activeTab === "history" && <StudentHistoryView />}
-          {activeTab === "voice" && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-bold">Community Voice</h2>
-                <p className="text-muted-foreground text-sm mt-1">See what students are saying about meals</p>
+          <div key={activeTab} className="animate-fade-in">
+            {activeTab === "home" && <StudentHome />}
+            {activeTab === "menu" && <StudentMenuView />}
+            {activeTab === "history" && <StudentHistoryView />}
+            {activeTab === "voice" && (
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-xl font-bold">Community Voice</h2>
+                  <p className="text-muted-foreground text-sm mt-1">See what students are saying about meals</p>
+                </div>
+                <StudentVoiceFeed showHeader={false} limit={12} />
               </div>
-              <StudentVoiceFeed showHeader={false} limit={12} />
-            </div>
-          )}
-          {activeTab === "profile" && <StudentProfileView />}
+            )}
+            {activeTab === "profile" && <StudentProfileView />}
+          </div>
         </main>
 
         {/* Floating Bottom Navigation */}
