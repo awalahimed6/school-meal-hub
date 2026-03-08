@@ -234,6 +234,14 @@ const StudentDashboard = () => {
             </div>
           </div>
         </nav>
+
+        {/* Onboarding Tour */}
+        {showOnboarding && (
+          <OnboardingTour
+            studentName={student?.full_name?.split(" ")[0] || "Student"}
+            onComplete={() => completeOnboarding.mutate()}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );
