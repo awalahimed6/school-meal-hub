@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,8 @@ interface Message {
 }
 
 export const GlobalCampusBuddy = () => {
+  const location = useLocation();
+  const isStudentDashboard = location.pathname === "/student";
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -103,7 +106,9 @@ export const GlobalCampusBuddy = () => {
       {/* Floating Action Button */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-gradient-to-r from-primary to-orange-600"
+        className={`fixed right-6 z-50 h-14 w-14 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-gradient-to-r from-primary to-orange-600 ${
+          isStudentDashboard ? "bottom-28" : "bottom-6"
+        }`}
         size="icon"
       >
         {isOpen ? (

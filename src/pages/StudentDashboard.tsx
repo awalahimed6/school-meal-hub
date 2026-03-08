@@ -144,7 +144,7 @@ const StudentDashboard = () => {
         </header>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 py-6">
+        <main className="container mx-auto px-4 py-6 pb-32">
           {activeTab === "home" && <StudentHome />}
           {activeTab === "menu" && <StudentMenuView />}
           {activeTab === "history" && <StudentHistoryView />}
