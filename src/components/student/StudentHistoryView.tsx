@@ -5,17 +5,19 @@ import { Star, Calendar } from "lucide-react";
 
 export const StudentHistoryView = () => {
   return (
-    <div className="space-y-6 pb-24">
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">Your Activity</h2>
-        <p className="text-muted-foreground">Meals and ratings history</p>
+    <div className="space-y-5 pb-24">
+      <div>
+        <h2 className="text-xl font-bold text-foreground">Your Activity</h2>
+        <p className="text-sm text-muted-foreground mt-1">Meals and ratings history</p>
       </div>
 
-      <Card className="rounded-[32px] shadow-xl border-0">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-primary" />
-            <CardTitle>Rate Today's Meals</CardTitle>
+      <Card className="border-0 shadow-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Star className="h-4 w-4 text-accent" />
+            </div>
+            <CardTitle className="text-base">Rate Today's Meals</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -23,11 +25,13 @@ export const StudentHistoryView = () => {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[32px] shadow-xl border-0">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            <CardTitle>Meal History</CardTitle>
+      <Card className="border-0 shadow-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-primary" />
+            </div>
+            <CardTitle className="text-base">Meal History</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
