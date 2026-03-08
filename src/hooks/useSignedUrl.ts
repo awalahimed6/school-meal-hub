@@ -24,6 +24,12 @@ function parseBucketPath(storedValue: string): { bucket: string; path: string } 
     return { bucket: signedMatch[1], path: signedMatch[2] };
   }
 
+  // If it doesn't match any URL pattern but looks like a bare filename/path
+  // (no protocol), assume it's from student-profiles bucket
+  if (!storedValue.startsWith('http') && !storedValue.startsWith('/')) {
+    return { bucket: 'student-profiles', path: storedValue };
+  }
+
   return null;
 }
 
