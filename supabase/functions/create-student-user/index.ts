@@ -183,7 +183,7 @@ serve(async (req) => {
             "api-key": brevoApiKey!,
           },
           body: JSON.stringify({
-            sender: { name: "School Meal Hub", email: "noreply@school-snap-meal.lovable.app" },
+            sender: { name: "School Meal Hub", email: "awalahimed463@gmail.com" },
             to: [{ email, name: fullName }],
             subject: "Welcome to School Meal Hub - Your Login Credentials",
             htmlContent: `
