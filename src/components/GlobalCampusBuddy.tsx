@@ -120,7 +120,11 @@ export const GlobalCampusBuddy = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed inset-0 z-50 w-full h-[100dvh] rounded-none sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[380px] sm:h-[600px] sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        <Card className={`fixed z-50 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 rounded-2xl ${
+          isStudentDashboard
+            ? "bottom-32 right-4 left-4 h-[65dvh] sm:left-auto sm:w-[380px] sm:h-[500px] sm:right-6"
+            : "inset-0 h-[100dvh] rounded-none sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[380px] sm:h-[600px] sm:rounded-2xl"
+        }`}>
           {/* Header */}
           <CardHeader className="bg-gradient-to-r from-primary to-orange-600 text-white p-4 flex-shrink-0">
             <div className="flex items-center justify-between">
