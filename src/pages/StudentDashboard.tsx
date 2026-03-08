@@ -57,7 +57,6 @@ const StudentDashboard = () => {
   });
 
   const showOnboarding = student && !student.has_seen_onboarding;
-  });
 
   const handleTabClick = (tabId: TabType) => {
     setActiveTab(tabId);
