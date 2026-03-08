@@ -57,7 +57,7 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
       const { data, error } = await supabase
         .from("students")
         .select("*")
-        .ilike("student_id", `%${query}%`)
+        .eq("student_id", query)
         .limit(10);
 
       if (error) throw error;
