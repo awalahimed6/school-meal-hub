@@ -218,19 +218,19 @@ const Backup = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold">3</div>
+                <div className="text-2xl font-bold">{counts.students ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Students</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold">2</div>
+                <div className="text-2xl font-bold">{counts.staff ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Staff</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold">9</div>
+                <div className="text-2xl font-bold">{counts.meals ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Meals</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold">6</div>
+                <div className="text-2xl font-bold">{counts.profiles ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Users</div>
               </div>
             </div>
