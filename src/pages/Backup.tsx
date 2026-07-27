@@ -33,6 +33,44 @@ const tables: TableInfo[] = [
 const Backup = () => {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [downloaded, setDownloaded] = useState<Set<string>>(new Set());
+  const [users, setUsers] = useState<Array<{ email: string; role: string }>>([]);
+  const [storageFiles, setStorageFiles] = useState<Record<string, string[]>>({});
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    (async () => {
+      // Fetch user list (admin-only via RLS)
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role, user_id, profiles:profiles!inner(email)" as any);
+      if (roles) {
+        setUsers(
+          (roles as any[]).map((r) => ({
+            email: r.profiles?.email ?? "",
+            role: r.role,
+          })).filter((u) => u.email)
+        );
+      }
+
+      // Fetch storage file listings
+      const buckets = ["student-profiles", "meal-photos"];
+      const files: Record<string, string[]> = {};
+      for (const b of buckets) {
+        const { data } = await supabase.storage.from(b).list("", { limit: 100 });
+        files[b] = (data ?? []).map((f) => f.name);
+      }
+      setStorageFiles(files);
+
+      // Counts
+      const countTables = ["students", "staff", "meals", "profiles"] as const;
+      const c: Record<string, number> = {};
+      for (const t of countTables) {
+        const { count } = await supabase.from(t).select("*", { count: "exact", head: true });
+        c[t] = count ?? 0;
+      }
+      setCounts(c);
+    })();
+  }, []);
 
   const downloadTableAsJSON = async (tableName: string) => {
     setDownloading(tableName);
