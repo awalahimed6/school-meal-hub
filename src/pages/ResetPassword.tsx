@@ -131,7 +131,7 @@ const ResetPassword = () => {
                 autoComplete="new-password"
               />
               <p className="text-xs text-muted-foreground">
-                Must be at least 6 characters long
+                At least 8 characters with uppercase, lowercase, and a number
               </p>
             </div>
             <div className="space-y-2">
