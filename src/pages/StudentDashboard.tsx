@@ -50,10 +50,10 @@ const StudentDashboard = () => {
     <ProtectedRoute allowedRoles={["student"]}>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b">
+        <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-border/80">
           <div className="container mx-auto flex items-center justify-between px-4 py-4">
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
                 Student Portal
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">{user?.email}</p>

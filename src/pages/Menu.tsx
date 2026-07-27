@@ -58,10 +58,10 @@ const Menu = () => {
     <ProtectedRoute allowedRoles={["admin", "staff", "student"]}>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="border-b bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/30">
+        <header className="border-b bg-card border-border/80 shadow-xs">
           <div className="container mx-auto flex items-center justify-between px-4 py-6">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">
                 Weekly Menu
               </h1>
               <p className="text-sm text-muted-foreground mt-1">{user?.email}</p>

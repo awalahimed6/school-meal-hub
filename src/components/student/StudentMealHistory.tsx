@@ -124,29 +124,29 @@ export const StudentMealHistory = () => {
               </div>
             </div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4 border border-border/80 shadow-xs">
             <div>
-              <p className="text-xs text-muted-foreground">Breakfast</p>
-              <p className="text-2xl font-bold text-orange-500">{stats.breakfast}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Breakfast</p>
+              <p className="text-2xl font-bold text-foreground">{stats.breakfast}</p>
             </div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4 border border-border/80 shadow-xs">
             <div>
-              <p className="text-xs text-muted-foreground">Lunch</p>
-              <p className="text-2xl font-bold text-green-500">{stats.lunch}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Lunch</p>
+              <p className="text-2xl font-bold text-foreground">{stats.lunch}</p>
             </div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4 border border-border/80 shadow-xs">
             <div>
-              <p className="text-xs text-muted-foreground">Dinner</p>
-              <p className="text-2xl font-bold text-blue-500">{stats.dinner}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Dinner</p>
+              <p className="text-2xl font-bold text-foreground">{stats.dinner}</p>
             </div>
           </Card>
         </div>
       )}
 
       {/* History by Month */}
-      <ScrollArea className="h-[500px] rounded-md border">
+      <ScrollArea className="h-[500px] rounded-md border border-border/80">
         <div className="p-4 space-y-6">
           {groupedByMonth &&
             Object.entries(groupedByMonth).map(([month, monthMeals]) => {
@@ -163,8 +163,8 @@ export const StudentMealHistory = () => {
               return (
                 <div key={month}>
                   <div className="flex items-center gap-2 mb-3 sticky top-0 bg-background py-2 z-10">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    <h3 className="font-semibold text-lg">{month}</h3>
+                    <Calendar className="h-4 w-4 text-foreground" />
+                    <h3 className="font-semibold text-lg tracking-tight">{month}</h3>
                     <span className="text-sm text-muted-foreground">
                       ({monthMeals.length} meals)
                     </span>
@@ -186,17 +186,17 @@ export const StudentMealHistory = () => {
                           </TableCell>
                           <TableCell className="text-center">
                             {dayMeals.some((m) => m.meal_type === "breakfast") && (
-                              <Check className="h-5 w-5 text-orange-500 mx-auto" />
+                              <Check className="h-5 w-5 text-foreground mx-auto" />
                             )}
                           </TableCell>
                           <TableCell className="text-center">
                             {dayMeals.some((m) => m.meal_type === "lunch") && (
-                              <Check className="h-5 w-5 text-green-500 mx-auto" />
+                              <Check className="h-5 w-5 text-foreground mx-auto" />
                             )}
                           </TableCell>
                           <TableCell className="text-center">
                             {dayMeals.some((m) => m.meal_type === "dinner") && (
-                              <Check className="h-5 w-5 text-blue-500 mx-auto" />
+                              <Check className="h-5 w-5 text-foreground mx-auto" />
                             )}
                           </TableCell>
                         </TableRow>

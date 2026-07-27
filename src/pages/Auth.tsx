@@ -116,13 +116,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md border border-border/80 shadow-sm">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary">
-            <Utensils className="h-8 w-8 text-primary-foreground" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-md bg-primary">
+            <Utensils className="h-7 w-7 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">School Meal System</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">School Meal System</CardTitle>
           <CardDescription>Sign in to manage meals and student records</CardDescription>
         </CardHeader>
         <CardContent>

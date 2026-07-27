@@ -79,14 +79,14 @@ const StaffDashboard = () => {
     <ProtectedRoute allowedRoles={["staff"]}>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="border-b bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/30">
+        <header className="border-b bg-card border-border/80 shadow-xs">
           <div className="container mx-auto flex items-center justify-between px-4 py-4">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" onClick={() => navigate("/")} title="Back to Home">
                 <Home className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Staff Dashboard</h1>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">Staff Dashboard</h1>
                 <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
             </div>

@@ -41,16 +41,17 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+  return (
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm">
+      <header className="border-b bg-card border-border/80">
         <div className="container mx-auto flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-              <Utensils className="h-6 w-6 text-primary-foreground" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary">
+              <Utensils className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">School Meal System</h1>
+              <h1 className="text-xl font-bold tracking-tight">School Meal System</h1>
               <p className="text-sm text-muted-foreground">Nutrition & Management</p>
             </div>
           </div>
@@ -72,7 +73,7 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
-        <h2 className="mb-4 text-4xl font-bold md:text-5xl">
+        <h2 className="mb-4 text-4xl font-bold tracking-tight md:text-5xl">
           Welcome to School Meal Management
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
@@ -102,27 +103,27 @@ const Index = () => {
       {/* Features */}
       <section className="container mx-auto px-4 py-12">
         <div className="grid gap-6 md:grid-cols-3">
-          <Card>
+          <Card className="border border-border/80 shadow-xs">
             <CardHeader>
-              <Users className="mb-2 h-10 w-10 text-primary" />
+              <Users className="mb-2 h-8 w-8 text-foreground" />
               <CardTitle>Student Management</CardTitle>
               <CardDescription>
                 Easy registration and profile management for all students
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card>
+          <Card className="border border-border/80 shadow-xs">
             <CardHeader>
-              <Utensils className="mb-2 h-10 w-10 text-secondary" />
+              <Utensils className="mb-2 h-8 w-8 text-foreground" />
               <CardTitle>Meal Tracking</CardTitle>
               <CardDescription>
                 Accurate tracking of breakfast, lunch, and dinner for every student
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card>
+          <Card className="border border-border/80 shadow-xs">
             <CardHeader>
-              <Bell className="mb-2 h-10 w-10 text-warning" />
+              <Bell className="mb-2 h-8 w-8 text-foreground" />
               <CardTitle>Announcements</CardTitle>
               <CardDescription>
                 Stay updated with important meal schedule changes and news
@@ -134,10 +135,10 @@ const Index = () => {
 
       {/* Meal Schedule */}
       <section id="schedule" className="container mx-auto px-4 py-12">
-        <Card>
+        <Card className="border border-border/80 shadow-xs">
           <CardHeader className="text-center">
-            <Calendar className="mx-auto mb-2 h-12 w-12 text-primary" />
-            <CardTitle className="text-2xl">Daily Meal Schedule</CardTitle>
+            <Calendar className="mx-auto mb-2 h-10 w-10 text-foreground" />
+            <CardTitle className="text-2xl font-bold tracking-tight">Daily Meal Schedule</CardTitle>
             <CardDescription>Regular meal times for all students</CardDescription>
           </CardHeader>
           <CardContent>
@@ -145,7 +146,7 @@ const Index = () => {
               {mealSchedule.map((item) => (
                 <div
                   key={item.meal}
-                  className="flex items-center justify-between rounded-lg border p-4"
+                  className="flex items-center justify-between rounded-md border p-4"
                 >
                   <div className="flex items-center gap-3">
                     <Utensils className="h-5 w-5 text-muted-foreground" />
@@ -162,10 +163,10 @@ const Index = () => {
       {/* Announcements */}
       {announcements && announcements.length > 0 && (
         <section className="container mx-auto px-4 py-12">
-          <Card>
+          <Card className="border border-border/80 shadow-xs">
             <CardHeader>
-              <Bell className="mb-2 h-10 w-10 text-warning" />
-              <CardTitle className="text-2xl">Latest Announcements</CardTitle>
+              <Bell className="mb-2 h-8 w-8 text-foreground" />
+              <CardTitle className="text-2xl font-bold tracking-tight">Latest Announcements</CardTitle>
               <CardDescription>Important updates from the cafeteria</CardDescription>
             </CardHeader>
             <CardContent>

@@ -313,12 +313,12 @@ export const StudentSearch = ({ externalSearchQuery, onSearchQueryChange }: Stud
           )}
           
           {selectedStudent.dietary_needs && (
-            <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
-              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <AlertTitle className="text-blue-900 dark:text-blue-100 font-semibold">
+            <Alert className="border-border bg-card">
+              <Info className="h-4 w-4 text-foreground" />
+              <AlertTitle className="text-foreground font-semibold">
                 Dietary Needs
               </AlertTitle>
-              <AlertDescription className="text-blue-800 dark:text-blue-200 text-sm whitespace-pre-wrap">
+              <AlertDescription className="text-muted-foreground text-sm whitespace-pre-wrap">
                 {selectedStudent.dietary_needs}
               </AlertDescription>
             </Alert>
