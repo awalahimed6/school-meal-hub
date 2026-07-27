@@ -41,7 +41,6 @@ const Index = () => {
   ];
 
   return (
-  return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card border-border/80">
