@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,44 @@ const tables: TableInfo[] = [
 const Backup = () => {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [downloaded, setDownloaded] = useState<Set<string>>(new Set());
+  const [users, setUsers] = useState<Array<{ email: string; role: string }>>([]);
+  const [storageFiles, setStorageFiles] = useState<Record<string, string[]>>({});
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    (async () => {
+      // Fetch user list (admin-only via RLS)
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role, user_id, profiles:profiles!inner(email)" as any);
+      if (roles) {
+        setUsers(
+          (roles as any[]).map((r) => ({
+            email: r.profiles?.email ?? "",
+            role: r.role,
+          })).filter((u) => u.email)
+        );
+      }
+
+      // Fetch storage file listings
+      const buckets = ["student-profiles", "meal-photos"];
+      const files: Record<string, string[]> = {};
+      for (const b of buckets) {
+        const { data } = await supabase.storage.from(b).list("", { limit: 100 });
+        files[b] = (data ?? []).map((f) => f.name);
+      }
+      setStorageFiles(files);
+
+      // Counts
+      const countTables = ["students", "staff", "meals", "profiles"] as const;
+      const c: Record<string, number> = {};
+      for (const t of countTables) {
+        const { count } = await supabase.from(t).select("*", { count: "exact", head: true });
+        c[t] = count ?? 0;
+      }
+      setCounts(c);
+    })();
+  }, []);
 
   const downloadTableAsJSON = async (tableName: string) => {
     setDownloading(tableName);
@@ -180,19 +218,19 @@ const Backup = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold">3</div>
+                <div className="text-2xl font-bold">{counts.students ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Students</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold">2</div>
+                <div className="text-2xl font-bold">{counts.staff ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Staff</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold">9</div>
+                <div className="text-2xl font-bold">{counts.meals ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Meals</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold">6</div>
+                <div className="text-2xl font-bold">{counts.profiles ?? "—"}</div>
                 <div className="text-sm text-muted-foreground">Users</div>
               </div>
             </div>
@@ -272,34 +310,23 @@ const Backup = () => {
               <Users className="h-5 w-5" />
               Authentication Users
             </CardTitle>
-            <CardDescription>User accounts from profiles table (6 users)</CardDescription>
+            <CardDescription>User accounts ({users.length} users)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 mb-4">
-              <div className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
-                <span>awalahimed463@gmail.com</span>
-                <Badge>admin</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
-                <span>awalahimed777@gmail.com</span>
-                <Badge variant="secondary">student</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
-                <span>nanbondev@gmail.com</span>
-                <Badge variant="secondary">student</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
-                <span>awalahimed44@gmail.com</span>
-                <Badge variant="outline">staff</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
-                <span>awalahimed41@gmail.com</span>
-                <Badge variant="outline">staff</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
-                <span>nanbon@gmail.com</span>
-                <Badge variant="secondary">student</Badge>
-              </div>
+              {users.length === 0 && (
+                <p className="text-sm text-muted-foreground">Loading users…</p>
+              )}
+              {users.map((u) => (
+                <div key={`${u.email}-${u.role}`} className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
+                  <span>{u.email}</span>
+                  <Badge
+                    variant={u.role === "admin" ? "default" : u.role === "staff" ? "outline" : "secondary"}
+                  >
+                    {u.role}
+                  </Badge>
+                </div>
+              ))}
             </div>
             <p className="text-xs text-muted-foreground">
               Note: User passwords cannot be exported for security reasons. Users will need to reset passwords after any migration.
@@ -317,29 +344,16 @@ const Backup = () => {
             <CardDescription>Uploaded images and files</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <div className="font-medium">student-profiles bucket</div>
-              <div className="text-sm text-muted-foreground mb-2">Student profile images</div>
-              <div className="text-xs space-y-1">
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/student-profiles/temp-1764465228996-1764465228996.jpg" target="_blank" className="text-primary hover:underline block">• Student 1 profile image</a>
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/student-profiles/2-1764465592542.jpg" target="_blank" className="text-primary hover:underline block">• Student 2 profile image</a>
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/student-profiles/temp-1765094362093-1765094362093.jpg" target="_blank" className="text-primary hover:underline block">• Student 3 profile image</a>
+            {Object.entries(storageFiles).map(([bucket, files]) => (
+              <div key={bucket} className="p-3 bg-muted/50 rounded-lg">
+                <div className="font-medium">{bucket} bucket</div>
+                <div className="text-sm text-muted-foreground mb-2">
+                  {files.length} file{files.length === 1 ? "" : "s"}
+                </div>
               </div>
-            </div>
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <div className="font-medium">meal-photos bucket</div>
-              <div className="text-sm text-muted-foreground mb-2">Meal rating photos</div>
-              <div className="text-xs space-y-1">
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/meal-photos/48c381e7-5fc6-4248-9fb2-d5997e8fe7dc/1764467149052.jpg" target="_blank" className="text-primary hover:underline block">• Meal photo 1</a>
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/meal-photos/2d20d85e-46e4-498f-adf7-19d9413142c0/1765096886706.jpg" target="_blank" className="text-primary hover:underline block">• Meal photo 2</a>
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/meal-photos/48c381e7-5fc6-4248-9fb2-d5997e8fe7dc/1765097655514.jpg" target="_blank" className="text-primary hover:underline block">• Meal photo 3</a>
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/meal-photos/48c381e7-5fc6-4248-9fb2-d5997e8fe7dc/1765098175061.jpg" target="_blank" className="text-primary hover:underline block">• Meal photo 4</a>
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/meal-photos/2d20d85e-46e4-498f-adf7-19d9413142c0/1765108281580.jpg" target="_blank" className="text-primary hover:underline block">• Meal photo 5</a>
-                <a href="https://qxiadvdbmrcetghtqywa.supabase.co/storage/v1/object/public/meal-photos/48c381e7-5fc6-4248-9fb2-d5997e8fe7dc/1765404687892.png" target="_blank" className="text-primary hover:underline block">• Meal photo 6</a>
-              </div>
-            </div>
+            ))}
             <p className="text-xs text-muted-foreground">
-              Right-click and "Save As" to download individual images, or click to view them.
+              Files are stored in private buckets and only accessible via signed URLs generated for authorized users.
             </p>
           </CardContent>
         </Card>

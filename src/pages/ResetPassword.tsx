@@ -10,7 +10,12 @@ import { Utensils } from "lucide-react";
 import { z } from "zod";
 
 const resetPasswordSchema = z.object({
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .max(72, "Password must be less than 72 characters")
+    .regex(/[A-Z]/, "Must contain an uppercase letter")
+    .regex(/[a-z]/, "Must contain a lowercase letter")
+    .regex(/[0-9]/, "Must contain a number"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -126,7 +131,7 @@ const ResetPassword = () => {
                 autoComplete="new-password"
               />
               <p className="text-xs text-muted-foreground">
-                Must be at least 6 characters long
+                At least 8 characters with uppercase, lowercase, and a number
               </p>
             </div>
             <div className="space-y-2">

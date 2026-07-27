@@ -70,6 +70,75 @@ export type Database = {
           },
         ]
       }
+      gallery_images: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      knowledge_base: {
+        Row: {
+          answer: string
+          category: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meal_ratings: {
         Row: {
           comment: string | null
@@ -138,6 +207,42 @@ export type Database = {
           is_active?: boolean | null
           meal_type?: string
           start_time?: string
+        }
+        Relationships: []
+      }
+      meal_system_video: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -273,6 +378,7 @@ export type Database = {
           dietary_needs: string | null
           full_name: string
           grade: string
+          has_seen_onboarding: boolean
           id: string
           last_checked_announcements: string | null
           last_checked_voice: string | null
@@ -289,6 +395,7 @@ export type Database = {
           dietary_needs?: string | null
           full_name: string
           grade: string
+          has_seen_onboarding?: boolean
           id?: string
           last_checked_announcements?: string | null
           last_checked_voice?: string | null
@@ -305,6 +412,7 @@ export type Database = {
           dietary_needs?: string | null
           full_name?: string
           grade?: string
+          has_seen_onboarding?: boolean
           id?: string
           last_checked_announcements?: string | null
           last_checked_voice?: string | null
@@ -410,10 +518,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      toggle_like: {
-        Args: { _rating_id: string; _user_id: string }
-        Returns: boolean
-      }
+      toggle_like: { Args: { _rating_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "staff" | "student"
