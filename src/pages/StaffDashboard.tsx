@@ -47,8 +47,8 @@ const StaffDashboard = () => {
   };
 
   const handlePasswordChange = async () => {
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -134,7 +134,7 @@ const StaffDashboard = () => {
             <DialogHeader>
               <DialogTitle>Change Password</DialogTitle>
               <DialogDescription>
-                Enter your new password below. Password must be at least 6 characters.
+                Enter your new password below. Password must be at least 8 characters.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
