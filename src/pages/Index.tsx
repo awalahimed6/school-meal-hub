@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Utensils, Calendar, Bell, Users } from "lucide-react";
@@ -64,7 +64,7 @@ const Index = () => {
             </Button>
           ) : (
             <Button asChild>
-              <a href="/auth">Login</a>
+              <Link to="/auth">Login</Link>
             </Button>
           )}
         </div>
@@ -90,7 +90,7 @@ const Index = () => {
             </Button>
           ) : (
             <Button size="lg" asChild>
-              <a href="/auth">Get Started</a>
+              <Link to="/auth">Get Started</Link>
             </Button>
           )}
           <Button size="lg" variant="outline" asChild>

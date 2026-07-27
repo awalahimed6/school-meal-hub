@@ -30,7 +30,7 @@ export const useUnreadAnnouncements = () => {
         .from("students")
         .select("id, last_checked_announcements")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -88,7 +88,7 @@ export const useUnreadAnnouncements = () => {
         .from("students")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!student) return;
 

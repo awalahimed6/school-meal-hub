@@ -325,7 +325,7 @@ export const MealRating = () => {
         .from("students")
         .select("id")
         .eq("user_id", user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

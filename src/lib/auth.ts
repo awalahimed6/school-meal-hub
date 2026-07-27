@@ -35,23 +35,62 @@ export const signOut = async () => {
 };
 
 export const getUserRole = async (userId: string): Promise<UserRole | null> => {
-  const { data, error } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .single();
-  
-  if (error || !data) return null;
-  return data.role as UserRole;
+  try {
+    // 1. Try user_roles table
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle();
+    
+    if (!roleError && roleData?.role) {
+      return roleData.role as UserRole;
+    }
+
+    // 2. Fallback: check staff table
+    const { data: staffData } = await supabase
+      .from("staff")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (staffData) return "staff";
+
+    // 3. Fallback: check students table
+    const { data: studentData } = await supabase
+      .from("students")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (studentData) return "student";
+
+    // 4. Fallback: check auth user metadata
+    const { data: authData } = await supabase.auth.getUser();
+    if (authData?.user?.user_metadata?.role) {
+      return authData.user.user_metadata.role as UserRole;
+    }
+  } catch (err) {
+    console.error("Error fetching user role:", err);
+  }
+
+  return null;
 };
 
 export const checkUserRole = async (userId: string, role: UserRole): Promise<boolean> => {
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", role)
-    .single();
-  
-  return !!data;
+  try {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", role)
+      .maybeSingle();
+    
+    if (data) return true;
+
+    const currentRole = await getUserRole(userId);
+    return currentRole === role;
+  } catch {
+    return false;
+  }
 };

@@ -36,10 +36,11 @@ const Auth = () => {
   const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user && role) {
+    if (!loading && user) {
       if (role === "admin") navigate("/admin");
       else if (role === "staff") navigate("/staff");
       else if (role === "student") navigate("/student");
+      else if (role) navigate("/");
     }
   }, [user, role, loading, navigate]);
 
@@ -58,7 +59,7 @@ const Auth = () => {
     try {
       loginSchema.parse({ email, password });
 
-      const { error } = await signIn(email, password);
+      const { data, error } = await signIn(email, password);
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
@@ -70,7 +71,14 @@ const Auth = () => {
       }
 
       toast.success("Logged in successfully!");
-      // Navigation will happen automatically via useAuth redirect
+
+      if (data?.user) {
+        const userRole = await getUserRole(data.user.id);
+        if (userRole === "admin") navigate("/admin");
+        else if (userRole === "staff") navigate("/staff");
+        else if (userRole === "student") navigate("/student");
+        else navigate("/");
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);

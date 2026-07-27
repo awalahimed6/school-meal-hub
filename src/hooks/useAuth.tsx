@@ -32,42 +32,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          setTimeout(() => {
-            getUserRole(session.user.id).then((userRole) => {
-              setRole(userRole);
-              setLoading(false);
-            });
-          }, 0);
-        } else {
+    let isMounted = true;
+
+    const syncAuth = async (currentSession: Session | null) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+
+      if (currentSession?.user) {
+        try {
+          const userRole = await getUserRole(currentSession.user.id);
+          if (isMounted) {
+            setRole(userRole);
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error("Error in syncAuth role fetch:", error);
+          if (isMounted) {
+            setRole(null);
+            setLoading(false);
+          }
+        }
+      } else {
+        if (isMounted) {
           setRole(null);
           setLoading(false);
         }
       }
+    };
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        syncAuth(session);
+      }
     );
 
-    // Check for existing session
+    // Initial session fetch
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        getUserRole(session.user.id).then((userRole) => {
-          setRole(userRole);
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
+      syncAuth(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (

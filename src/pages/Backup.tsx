@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+
 interface TableInfo {
   name: string;
   displayName: string;
@@ -151,14 +153,15 @@ const Backup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="outline" size="icon">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
           <div>
             <h1 className="text-3xl font-bold">Data Backup</h1>
             <p className="text-muted-foreground">Export your Lovable Cloud data</p>
@@ -342,7 +345,8 @@ const Backup = () => {
         </Card>
       </div>
     </div>
-  );
+  </ProtectedRoute>
+);
 };
 
 export default Backup;
