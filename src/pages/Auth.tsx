@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { signIn } from "@/lib/auth";
+import { signIn, getUserRole } from "@/lib/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Utensils } from "lucide-react";
