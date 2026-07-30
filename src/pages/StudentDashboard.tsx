@@ -16,6 +16,7 @@ import { StudentMenuView } from "@/components/student/StudentMenuView";
 import { StudentHistoryView } from "@/components/student/StudentHistoryView";
 import { StudentProfileView } from "@/components/student/StudentProfileView";
 import { StudentVoiceFeed } from "@/components/shared/StudentVoiceFeed";
+import { AIChatbot } from "@/components/shared/AIChatbot";
 import { useUnreadVoice } from "@/hooks/useUnreadVoice";
 
 type TabType = "home" | "menu" | "history" | "voice" | "profile";
@@ -211,6 +212,9 @@ const StudentDashboard = () => {
             </div>
           </div>
         </nav>
+        
+        {/* Floating AI Assistant Chatbot */}
+        <AIChatbot />
       </div>
     </ProtectedRoute>
   );
